@@ -41,9 +41,9 @@ const Memory = {
     const s=this.state;
     this._el().innerHTML = `
       <div class="card">
-        <div class="ex-header"><h3 style="margin:0">Jeu de mémoire</h3><span style="color:var(--ink-soft);font-size:.9rem">Manche ${s.round+1} / ${s.totalRounds}</span></div>
+        <div class="ex-header"><h3 style="margin:0">${I18N.t('memory_title')}</h3><span style="color:var(--ink-soft);font-size:.9rem">${I18N.t('memory_round', s.round+1, s.totalRounds)}</span></div>
         <div class="progress"><span style="width:${100*s.round/s.totalRounds}%"></span></div>
-        <p style="color:var(--ink-soft);margin-top:16px">Regardez bien l'ordre d'apparition…</p>
+        <p style="color:var(--ink-soft);margin-top:16px">${I18N.t('memory_watch')}</p>
         <div id="memory-stage" style="display:flex;gap:14px;justify-content:center;margin:24px 0;flex-wrap:wrap;min-height:70px"></div>
       </div>`;
     const stage=document.getElementById('memory-stage');
@@ -63,9 +63,9 @@ const Memory = {
     const choices = [...new Set([...s.sequence, ...distractors])].sort(()=>Math.random()-0.5);
     this._el().innerHTML = `
       <div class="card">
-        <div class="ex-header"><h3 style="margin:0">Jeu de mémoire</h3><span style="color:var(--ink-soft);font-size:.9rem">Manche ${s.round+1} / ${s.totalRounds}</span></div>
+        <div class="ex-header"><h3 style="margin:0">${I18N.t('memory_title')}</h3><span style="color:var(--ink-soft);font-size:.9rem">${I18N.t('memory_round', s.round+1, s.totalRounds)}</span></div>
         <div class="progress"><span style="width:${100*s.round/s.totalRounds}%"></span></div>
-        <p style="color:var(--ink-soft);margin-top:16px">À vous : cliquez les images dans le même ordre.</p>
+        <p style="color:var(--ink-soft);margin-top:16px">${I18N.t('memory_instruction')}</p>
         <div id="memory-picked" style="min-height:50px;display:flex;gap:10px;justify-content:center;margin:14px 0;font-size:2rem"></div>
         <div class="choices" id="memory-choices" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
           ${choices.map(sym=>`<button class="choice" style="font-size:1.8rem;padding:14px 20px" onclick="Memory.pick('${sym}',this)">${sym}</button>`).join('')}
@@ -93,7 +93,7 @@ const Memory = {
     const fb=document.createElement('p');
     fb.style.textAlign='center'; fb.style.marginTop='14px'; fb.style.fontWeight='600';
     fb.style.color = ok ? 'var(--accent-dark)' : 'var(--error)';
-    fb.textContent = ok ? 'Bravo, le bon ordre ! 🎉' : `Pas tout à fait — la séquence était : ${s.sequence.join(' ')}`;
+    fb.textContent = ok ? I18N.t('memory_correct') : I18N.t('memory_wrong', s.sequence.join(' '));
     this._el().querySelector('.card').appendChild(fb);
     await new Promise(r=>setTimeout(r, 1600));
     s.round++;
@@ -112,10 +112,10 @@ const Memory = {
     this._el().innerHTML = `
       <div class="prompt-card">
         <div class="prompt-emoji">${pct>=70?'🌟':'🌱'}</div>
-        <div class="prompt-main">Séance terminée</div>
-        <div class="prompt-text">${s.ok} séquence(s) juste(s) sur ${s.totalRounds}.</div>
-        <button class="btn-primary" style="margin-top:20px" onclick="Memory.start()">Recommencer</button>
-        <button class="btn-ghost" style="margin-top:12px;width:100%" onclick="goDashboard()">Revenir à l'accueil</button>
+        <div class="prompt-main">${I18N.t('session_done')}</div>
+        <div class="prompt-text">${I18N.t('memory_result', s.ok, s.totalRounds)}</div>
+        <button class="btn-primary" style="margin-top:20px" onclick="Memory.start()">${I18N.t('memory_restart')}</button>
+        <button class="btn-ghost" style="margin-top:12px;width:100%" onclick="goDashboard()">${I18N.t('back_to_home')}</button>
       </div>`;
   }
 };

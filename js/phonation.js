@@ -27,15 +27,13 @@ const Phonation = {
     document.getElementById('phonation-body').innerHTML = `
       <div class="prompt-card" style="text-align:left">
         <div class="prompt-emoji" style="text-align:center">🫁</div>
-        <div class="prompt-main" style="text-align:center;font-size:1.4rem">Tenue vocale</div>
-        <p style="color:var(--ink-soft);margin-top:10px">Asseyez-vous confortablement. Quand vous êtes prêt·e, prenez une respiration
-          naturelle, puis tenez un son "aaaa" de façon continue, à un volume confortable.</p>
+        <div class="prompt-main" style="text-align:center;font-size:1.4rem">${I18N.t('ex_phonation_t')}</div>
+        <p style="color:var(--ink-soft);margin-top:10px">${I18N.t('phonation_intro')}</p>
         <div class="voice-warn" style="background:var(--accent-soft);color:var(--accent-dark)">
-          ℹ️ Ceci n'est pas un test médical. Ne forcez jamais votre voix. Arrêtez immédiatement
-          si vous ressentez une gêne, un essoufflement inhabituel ou une douleur.
+          ${I18N.t('phonation_disclaimer')}
         </div>
-        <button class="btn-primary" style="margin-top:18px" onclick="Phonation.start()">🎤 Je suis prêt·e</button>
-        <button class="btn-ghost" style="margin-top:10px;width:100%" onclick="goDashboard()">Annuler</button>
+        <button class="btn-primary" style="margin-top:18px" onclick="Phonation.start()">${I18N.t('phonation_ready_btn')}</button>
+        <button class="btn-ghost" style="margin-top:10px;width:100%" onclick="goDashboard()">${I18N.t('phonation_cancel')}</button>
       </div>`;
   },
 
@@ -44,8 +42,8 @@ const Phonation = {
     try{
       this._stream = await navigator.mediaDevices.getUserMedia({ audio:true });
     } catch(e){
-      body.innerHTML = `<div class="prompt-card"><div class="voice-warn">⚠️ Micro indisponible ou refusé. Vous pouvez réessayer, ou revenir plus tard.</div>
-        <button class="btn-ghost" style="margin-top:14px;width:100%" onclick="Phonation.intro()">← Réessayer</button></div>`;
+      body.innerHTML = `<div class="prompt-card"><div class="voice-warn">${I18N.t('phonation_mic_error')}</div>
+        <button class="btn-ghost" style="margin-top:14px;width:100%" onclick="Phonation.intro()">${I18N.t('phonation_retry')}</button></div>`;
       return;
     }
     this._ctx = new (window.AudioContext||window.webkitAudioContext)();
@@ -57,9 +55,9 @@ const Phonation = {
 
     body.innerHTML = `
       <div class="prompt-card" style="text-align:center">
-        <p style="color:var(--ink-soft)">Tenez votre son maintenant…</p>
+        <p style="color:var(--ink-soft)">${I18N.t('phonation_hold_now')}</p>
         <div style="font-size:3rem;font-family:monospace;color:var(--accent-dark);margin:20px 0" id="phon-timer">0.0 s</div>
-        <button class="btn-primary" onclick="Phonation.stop()">⏹ J'ai terminé</button>
+        <button class="btn-primary" onclick="Phonation.stop()">${I18N.t('phonation_stop_btn')}</button>
       </div>`;
 
     this._running = true; this._startedAt = null; this._lastAboveAt = null;
@@ -99,11 +97,10 @@ const Phonation = {
     document.getElementById('phonation-body').innerHTML = `
       <div class="prompt-card" style="text-align:center">
         <div class="prompt-emoji">🫁</div>
-        <div class="prompt-main">${duration.toFixed(1)} secondes</div>
-        <p style="color:var(--ink-soft);margin-top:10px">C'est votre mesure d'aujourd'hui — il n'y a pas de "bon" ou "mauvais" chiffre ici,
-          juste un repère que vous pourrez comparer à vous-même, si vous le souhaitez, une prochaine fois.</p>
-        <button class="btn-primary" style="margin-top:18px" onclick="Phonation.intro()">Recommencer</button>
-        <button class="btn-ghost" style="margin-top:10px;width:100%" onclick="goDashboard()">Revenir à l'accueil</button>
+        <div class="prompt-main">${duration.toFixed(1)} ${I18N.t('seconds_suffix')}</div>
+        <p style="color:var(--ink-soft);margin-top:10px">${I18N.t('phonation_result_note')}</p>
+        <button class="btn-primary" style="margin-top:18px" onclick="Phonation.intro()">${I18N.t('phonation_restart')}</button>
+        <button class="btn-ghost" style="margin-top:10px;width:100%" onclick="goDashboard()">${I18N.t('back_to_home')}</button>
       </div>`;
   }
 };

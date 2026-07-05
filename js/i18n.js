@@ -178,7 +178,34 @@ const I18N_STRINGS = {
     // un vrai travail de contenu, pas encore fait. Note affichée pour
     // éviter tout mélange silencieux de langues (même principe que le
     // kabyle).
-    conversation_untranslated_note:"La conversation guidée reste en français pour l'instant : ces scénarios n'ont pas encore été traduits."
+    conversation_untranslated_note:"La conversation guidée reste en français pour l'instant : ces scénarios n'ont pas encore été traduits.",
+
+    // v6.16 — js/memory.js n'avait jamais été relié à I18N (repéré par
+    // l'utilisateur en passant l'app en anglais). Texte simple, sans
+    // risque de sens contrairement au kabyle, donc traduit directement.
+    memory_title:'Jeu de mémoire',
+    memory_round:(n,total)=>`Manche ${n} / ${total}`,
+    memory_watch:"Regardez bien l'ordre d'apparition…",
+    memory_instruction:'À vous : cliquez les images dans le même ordre.',
+    memory_correct:'Bravo, le bon ordre ! 🎉',
+    memory_wrong:(seq)=>`Pas tout à fait — la séquence était : ${seq}`,
+    memory_result:(ok,total)=>`${ok} séquence(s) juste(s) sur ${total}.`,
+    memory_restart:'Recommencer',
+
+    // v6.16 — même oubli que memory.js, corrigé en même temps. Texte de
+    // sécurité (garde-fous médicaux) traduit avec le même soin que
+    // l'original, pas juste paraphrasé.
+    phonation_intro:"Asseyez-vous confortablement. Quand vous êtes prêt·e, prenez une respiration naturelle, puis tenez un son \"aaaa\" de façon continue, à un volume confortable.",
+    phonation_disclaimer:"ℹ️ Ceci n'est pas un test médical. Ne forcez jamais votre voix. Arrêtez immédiatement si vous ressentez une gêne, un essoufflement inhabituel ou une douleur.",
+    phonation_ready_btn:'🎤 Je suis prêt·e',
+    phonation_cancel:'Annuler',
+    phonation_mic_error:'⚠️ Micro indisponible ou refusé. Vous pouvez réessayer, ou revenir plus tard.',
+    phonation_retry:'← Réessayer',
+    phonation_hold_now:'Tenez votre son maintenant…',
+    phonation_stop_btn:"⏹ J'ai terminé",
+    phonation_result_note:"C'est votre mesure d'aujourd'hui — il n'y a pas de \"bon\" ou \"mauvais\" chiffre ici, juste un repère que vous pourrez comparer à vous-même, si vous le souhaitez, une prochaine fois.",
+    phonation_restart:'Recommencer',
+    seconds_suffix:'secondes'
   },
   en: {
     app_name:'ReParole',
@@ -275,7 +302,28 @@ const I18N_STRINGS = {
     ex_intonation_t:'Repeat with intonation', ex_intonation_d:'Question, exclamation, simple sentence',
     ex_memory_t:'Memory game', ex_memory_d:'Reproduce the order of a sequence of images — no voice needed',
     ex_phonation_t:'Vocal endurance', ex_phonation_d:'Hold a sound comfortably, at your own pace',
-    conversation_untranslated_note:"Guided conversation is still in French for now: these scenarios haven't been translated yet."
+    conversation_untranslated_note:"Guided conversation is still in French for now: these scenarios haven't been translated yet.",
+
+    memory_title:'Memory game',
+    memory_round:(n,total)=>`Round ${n} of ${total}`,
+    memory_watch:'Watch the order carefully…',
+    memory_instruction:'Your turn: click the images in the same order.',
+    memory_correct:'Well done, correct order! 🎉',
+    memory_wrong:(seq)=>`Not quite — the sequence was: ${seq}`,
+    memory_result:(ok,total)=>`${ok} correct sequence(s) out of ${total}.`,
+    memory_restart:'Restart',
+
+    phonation_intro:'Sit comfortably. When you\'re ready, take a natural breath, then hold an "aaaa" sound continuously, at a comfortable volume.',
+    phonation_disclaimer:"ℹ️ This is not a medical test. Never force your voice. Stop immediately if you feel discomfort, unusual breathlessness, or pain.",
+    phonation_ready_btn:"🎤 I'm ready",
+    phonation_cancel:'Cancel',
+    phonation_mic_error:'⚠️ Microphone unavailable or refused. You can try again, or come back later.',
+    phonation_retry:'← Try again',
+    phonation_hold_now:'Hold your sound now…',
+    phonation_stop_btn:"⏹ I'm done",
+    phonation_result_note:"This is today's measurement — there's no \"good\" or \"bad\" number here, just a marker you can compare yourself against another time, if you'd like.",
+    phonation_restart:'Restart',
+    seconds_suffix:'seconds'
   },
   kab: {
     app_name:'ReParole',
