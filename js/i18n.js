@@ -210,7 +210,19 @@ const I18N_STRINGS = {
     phonation_stop_btn:"⏹ J'ai terminé",
     phonation_result_note:"C'est votre mesure d'aujourd'hui — il n'y a pas de \"bon\" ou \"mauvais\" chiffre ici, juste un repère que vous pourrez comparer à vous-même, si vous le souhaitez, une prochaine fois.",
     phonation_restart:'Recommencer',
-    seconds_suffix:'secondes'
+    seconds_suffix:'secondes',
+
+    // v6.22 — conversation guidée traduite en EN/ES/IT/PT/DE/AR (pas en
+    // kabyle, voir js/conversation.js pour la raison).
+    conv_exchanges_label:'échanges guidés',
+    conv_choose_scenario:'Choisissez une mise en situation',
+    conv_choose_scenario_desc:"Ce sont des parcours préparés à l'avance (pas de dialogue libre), pour vous entraîner à des échanges du quotidien, à votre rythme.",
+    conv_interlocutor_says:"L'interlocuteur dit :",
+    conv_replay:'🔊 Réécouter',
+    conv_your_turn:'À vous de répondre — à voix haute ou en choisissant ci-dessous :',
+    conv_finished:'Conversation terminée',
+    conv_result:(ok,total)=>`${ok} échange(s) réussi(s) sur ${total}.`,
+    conv_try_another:'Essayer une autre situation'
   },
   en: {
     app_name:'ReParole',
@@ -328,7 +340,17 @@ const I18N_STRINGS = {
     phonation_stop_btn:"⏹ I'm done",
     phonation_result_note:"This is today's measurement — there's no \"good\" or \"bad\" number here, just a marker you can compare yourself against another time, if you'd like.",
     phonation_restart:'Restart',
-    seconds_suffix:'seconds'
+    seconds_suffix:'seconds',
+
+    conv_exchanges_label:'guided exchanges',
+    conv_choose_scenario:'Choose a scenario',
+    conv_choose_scenario_desc:'These are pre-written scenarios (no free dialogue), to practise everyday exchanges at your own pace.',
+    conv_interlocutor_says:'The other person says:',
+    conv_replay:'🔊 Replay',
+    conv_your_turn:'Your turn to answer — out loud or by choosing below:',
+    conv_finished:'Conversation complete',
+    conv_result:(ok,total)=>`${ok} successful exchange(s) out of ${total}.`,
+    conv_try_another:'Try another scenario'
   },
   es: {
     app_name:'ReParole',
@@ -446,7 +468,17 @@ const I18N_STRINGS = {
     phonation_stop_btn:'⏹ He terminado',
     phonation_result_note:'Esta es tu medida de hoy — no hay un número "bueno" o "malo" aquí, solo una referencia con la que compararte, si quieres, otro día.',
     phonation_restart:'Volver a empezar',
-    seconds_suffix:'segundos'
+    seconds_suffix:'segundos',
+
+    conv_exchanges_label:'intercambios guiados',
+    conv_choose_scenario:'Elige una situación',
+    conv_choose_scenario_desc:'Son situaciones preparadas de antemano (sin diálogo libre), para practicar intercambios cotidianos a tu ritmo.',
+    conv_interlocutor_says:'La otra persona dice:',
+    conv_replay:'🔊 Volver a escuchar',
+    conv_your_turn:'Te toca responder — en voz alta o eligiendo abajo:',
+    conv_finished:'Conversación terminada',
+    conv_result:(ok,total)=>`${ok} intercambio(s) logrado(s) de ${total}.`,
+    conv_try_another:'Probar otra situación'
   },
   it: {
     app_name:'ReParole',
@@ -564,7 +596,17 @@ const I18N_STRINGS = {
     phonation_stop_btn:'⏹ Ho finito',
     phonation_result_note:'Questa è la tua misura di oggi — non c\'è un numero "buono" o "cattivo" qui, solo un riferimento da confrontare con te stesso, se vuoi, un\'altra volta.',
     phonation_restart:'Ricomincia',
-    seconds_suffix:'secondi'
+    seconds_suffix:'secondi',
+
+    conv_exchanges_label:'scambi guidati',
+    conv_choose_scenario:'Scegli una situazione',
+    conv_choose_scenario_desc:'Sono situazioni preparate in anticipo (nessun dialogo libero), per esercitare scambi quotidiani al tuo ritmo.',
+    conv_interlocutor_says:"L'altra persona dice:",
+    conv_replay:'🔊 Riascolta',
+    conv_your_turn:'Tocca a te rispondere — ad alta voce o scegliendo qui sotto:',
+    conv_finished:'Conversazione terminata',
+    conv_result:(ok,total)=>`${ok} scambio/i riuscito/i su ${total}.`,
+    conv_try_another:"Prova un'altra situazione"
   },
   pt: {
     app_name:'ReParole',
@@ -682,7 +724,17 @@ const I18N_STRINGS = {
     phonation_stop_btn:'⏹ Terminei',
     phonation_result_note:'Esta é a sua medição de hoje — não há um número "bom" ou "mau" aqui, apenas uma referência com a qual se pode comparar, se quiser, noutra vez.',
     phonation_restart:'Recomeçar',
-    seconds_suffix:'segundos'
+    seconds_suffix:'segundos',
+
+    conv_exchanges_label:'trocas guiadas',
+    conv_choose_scenario:'Escolha uma situação',
+    conv_choose_scenario_desc:'Estas são situações preparadas com antecedência (sem diálogo livre), para praticar trocas do dia a dia ao seu ritmo.',
+    conv_interlocutor_says:'A outra pessoa diz:',
+    conv_replay:'🔊 Ouvir novamente',
+    conv_your_turn:'É a sua vez de responder — em voz alta ou escolhendo abaixo:',
+    conv_finished:'Conversa terminada',
+    conv_result:(ok,total)=>`${ok} troca(s) bem-sucedida(s) em ${total}.`,
+    conv_try_another:'Experimentar outra situação'
   },
   de: {
     app_name:'ReParole',
@@ -800,7 +852,17 @@ const I18N_STRINGS = {
     phonation_stop_btn:'⏹ Ich bin fertig',
     phonation_result_note:'Das ist Ihr heutiges Ergebnis — es gibt hier keine "gute" oder "schlechte" Zahl, nur einen Anhaltspunkt, mit dem Sie sich, wenn Sie möchten, ein anderes Mal vergleichen können.',
     phonation_restart:'Neu starten',
-    seconds_suffix:'Sekunden'
+    seconds_suffix:'Sekunden',
+
+    conv_exchanges_label:'geführte Austausche',
+    conv_choose_scenario:'Wählen Sie eine Situation',
+    conv_choose_scenario_desc:'Dies sind im Voraus vorbereitete Situationen (kein freier Dialog), um alltägliche Gespräche in Ihrem eigenen Tempo zu üben.',
+    conv_interlocutor_says:'Der Gesprächspartner sagt:',
+    conv_replay:'🔊 Erneut anhören',
+    conv_your_turn:'Sie sind dran zu antworten — laut oder durch Auswahl unten:',
+    conv_finished:'Gespräch beendet',
+    conv_result:(ok,total)=>`${ok} erfolgreiche(r) Austausch/e von ${total}.`,
+    conv_try_another:'Eine andere Situation ausprobieren'
   },
   ar: {
     app_name:'ReParole',
@@ -918,7 +980,17 @@ const I18N_STRINGS = {
     phonation_stop_btn:'⏹ لقد انتهيت',
     phonation_result_note:'هذا هو قياسك لهذا اليوم — لا يوجد رقم "جيد" أو "سيئ" هنا، بل مجرد مؤشر يمكنك مقارنة نفسك به، إذا أردت، في مرة أخرى.',
     phonation_restart:'إعادة البدء',
-    seconds_suffix:'ثوانٍ'
+    seconds_suffix:'ثوانٍ',
+
+    conv_exchanges_label:'تبادلات موجّهة',
+    conv_choose_scenario:'اختر موقفًا',
+    conv_choose_scenario_desc:'هذه مواقف مُعدّة مسبقًا (دون حوار حر)، للتدرب على تبادلات الحياة اليومية على إيقاعك الخاص.',
+    conv_interlocutor_says:'يقول المُحاور:',
+    conv_replay:'🔊 إعادة الاستماع',
+    conv_your_turn:'دورك للإجابة — بصوت عالٍ أو باختيار مما يلي:',
+    conv_finished:'انتهت المحادثة',
+    conv_result:(ok,total)=>`${ok} تبادل/تبادلات ناجحة من أصل ${total}.`,
+    conv_try_another:'تجربة موقف آخر'
   },
   kab: {
     app_name:'ReParole',
@@ -985,3 +1057,11 @@ const I18N = {
 
 window.I18N = I18N;
 window.LANGUAGES = LANGUAGES;
+// v6.21 : I18N_STRINGS n'était accessible que par les fonctions de ce
+// même fichier (I18N.t()) — jamais exposé sur `window` comme LANGUAGES
+// l'est déjà. Ça n'avait causé aucun bug visible jusqu'ici par pure
+// chance, mais c'est exactement la même fragilité qui a causé le bug
+// v6.20 ailleurs. Corrigé pour que le script de vérification
+// automatique (tests/i18n-completeness.test.js) puisse l'inspecter, et
+// pour que ça ne devienne pas un bug plus tard.
+window.I18N_STRINGS = I18N_STRINGS;

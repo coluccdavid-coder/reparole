@@ -818,3 +818,6 @@ const Assessment = {
 };
 
 window.Assessment = Assessment;
+// v6.21 : même correctif que I18N_STRINGS (js/i18n.js) — ASSESS_STRINGS
+// n'était accessible que par AS() dans ce même fichier.
+window.ASSESS_STRINGS = ASSESS_STRINGS;

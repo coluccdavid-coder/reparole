@@ -30,8 +30,11 @@ const Prefs = {
     // v6.9 : la conversation guidée n'est traduite dans aucune langue pour
     // l'instant (scénarios de dialogue entiers, pas juste du vocabulaire) —
     // note affichée pour toute langue non française, y compris le kabyle.
+    // v6.22 : la conversation guidée est maintenant traduite dans 6
+    // langues (EN/ES/IT/PT/DE/AR) — la notice ne doit plus s'afficher
+    // que pour celles qui n'ont vraiment pas de contenu (le kabyle).
     const convNote = document.getElementById('conversation-partial-note');
-    if(convNote) convNote.style.display = this.data.lang!=='fr' ? '' : 'none';
+    if(convNote) convNote.style.display = (this.data.lang!=='fr' && !window['CONV_SCENARIOS_'+this.data.lang.toUpperCase()]) ? '' : 'none';
     // v6.13 : "Votre assistant a appris" (AI.insight()) n'a de vraies
     // traductions que pour fr/en pour l'instant — pas encore pour le
     // kabyle (tag_* / insight_* absents de I18N_STRINGS.kab), donc
