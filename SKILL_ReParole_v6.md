@@ -79,6 +79,103 @@ juste pas vu le bouton de langue).
   effectué dans cette conversation (numéros de version "v8.x" qui ne
   correspondent pas au projet) — à clarifier avec lui plutôt qu'à
   prendre pour acquis.
+- **v6.17** : le bilan initial (`js/assessment.js`) traduit en anglais —
+  c'était le plus gros morceau non traduit restant. Domaines, questionnaire
+  de ressenti, 9 items du bilan, tous les textes d'interface. Réutilise
+  les clés I18N déjà existantes (`denom_prompt`, `completion_label`,
+  `levelName()`) plutôt que de dupliquer. Vérifié par simulation DOM sur
+  tout le parcours, fr et en. Kabyle inchangé (décision utilisateur :
+  pas de kabyle sur memory.js/phonation.js pour l'instant ; le bilan
+  kabyle reste dans son état partiel existant, dénomination seulement).
+  **Reste en français quelle que soit la langue** : uniquement
+  `js/conversation.js` maintenant (scénarios de dialogue entiers).
+- **v6.18** : menu déroulant de langue (remplace les boutons) + 5
+  nouvelles langues niveau "interface complète" : espagnol, italien,
+  portugais, allemand, arabe (RTL déjà géré par le mécanisme existant,
+  rendu visuel réel pas encore confirmé). Même limite que l'anglais à
+  ses débuts : contenu des exercices et bilan initial pas encore
+  traduits dans ces 5 langues (repli français automatique, sans mélange
+  silencieux). Décision utilisateur explicite sur le choix des langues :
+  un seul "English" (pas de distinction US/UK), et portugais + allemand
+  plutôt que turc/roumain (pertinence pour les populations immigrées en
+  France). Prochaine étape logique si demandée : les banques d'exercices
+  et `assessment.js` par langue, une à la fois comme pour l'anglais —
+  ne pas tenter de faire les 5 d'un coup, le volume devient ingérable.
+- **v6.19** : ES/IT/PT/DE/AR passent au niveau "complet" (exercices +
+  bilan initial), suite à demande explicite de l'utilisateur. Nouveaux
+  fichiers `js/exercises-{es,it,pt,de,ar}.js` (même structure que
+  `-en.js`). `js/assessment.js` généralisé (`domainLabel()`,
+  `symptomQuestions()`, `assessItems()` cherchent désormais
+  `ASSESS_*_XX` dynamiquement au lieu d'anglais codé en dur). Vérifié
+  par simulation DOM : bilan complet + lancement d'exercice, 5 langues.
+  Kabyle non touché (état existant conservé, décision précédente de
+  l'utilisateur de ne pas y toucher pour l'instant).
+- **v6.20** : vrai bug trouvé via capture (mode arabe) — `const X = ...`
+  ne s'attache JAMAIS à `window`, contrairement à `window.X = ...`.
+  `domainLabel()`/`symptomQuestions()`/`assessItems()` faisaient des
+  recherches `window['...']` sur des tables déclarées en `const` →
+  toujours `undefined` → repli silencieux sur le français, pour les 5
+  langues (ES/IT/PT/DE/AR), pas seulement l'arabe. Corrigé en passant
+  ces déclarations en `window.X = ...` (même pattern que `window.BANK_XX`
+  qui fonctionnait déjà correctement). Deuxième correctif : compteurs
+  "1/4" affichés inversés en RTL (bidi du navigateur) — `dir="ltr"`
+  forcé sur ces éléments spécifiquement. **Point de vigilance pour la
+  suite** : si une future table de traduction est ajoutée et accédée via
+  `window['NOM_'+lang]`, il FAUT la déclarer en `window.NOM_XX = ...`,
+  jamais en `const`/`let`, sous peine de reproduire ce bug silencieusement.
+- **v6.21** : filet de sécurité automatique — `tests/i18n-completeness.test.js`
+  (+ `package.json` pour `npm install && npm test`). Vérifie la
+  cohérence de toutes les traductions et, surtout, que les tables
+  dynamiques par langue sont de vraies propriétés `window.X` (pas des
+  `const` orphelins — le bug v6.20). Testé pour de vrai : bug
+  réintroduit volontairement, détecté correctement, confirmé réparé
+  après correction. Bonus : `I18N_STRINGS`/`ASSESS_STRINGS` avaient la
+  même fragilité latente (jamais exposés sur `window`), corrigé par
+  précaution avant que ça ne devienne un vrai bug.
+- **v6.21.1** : en faisant la démonstration du filet de sécurité à
+  l'utilisateur, un angle mort a été trouvé dans le script lui-même —
+  un tableau vide `[]` est "présent" en JavaScript (donc pas détecté
+  comme manquant), alors qu'il ne contient aucun exercice. Corrigé pour
+  vérifier `.length`, pas juste l'existence. Retesté avec le même
+  scénario simulé : détecté correctement cette fois, puis confirmé
+  réparé après restauration.
+- **v6.22** : conversation guidée (`js/conversation.js`) traduite en
+  EN/ES/IT/PT/DE/AR — dernier gros morceau de contenu non traduit.
+  Kabyle non concerné (même règle que le reste : dialogue entier, pas
+  de vocabulaire isolé). Corrigé au passage : reconnaissance vocale
+  restée en `fr-FR` codé en dur (oubli du passage multilingue), et
+  notice "conversation non traduite" qui s'affichait pour toutes les
+  langues non-fr au lieu de seulement le kabyle. **Le filet de sécurité
+  a servi dès sa première utilisation réelle** : a détecté les clés
+  `conv_*` manquantes en portugais, corrigé avant livraison plutôt
+  qu'après.
+- **v6.23** : PWA — `manifest.json`, `sw.js`, `icons/` (générées,
+  cohérentes avec le logo existant). Mode hors-ligne complet pour le
+  mode navigateur (localStorage), interface seulement pour le mode
+  cloud (connexion toujours nécessaire pour se connecter/sauvegarder).
+  Nouveau test `tests/pwa-check.test.js` ajouté au filet de sécurité —
+  vérifie que tout fichier chargé par `index.html` est bien dans le
+  cache hors-ligne, testé pour de vrai (fichier oublié simulé, détecté
+  correctement). **Non testé sur un vrai appareil** — pas d'accès à un
+  navigateur graphique dans cet environnement. Voir HEBERGEMENT.md pour
+  la marche à suivre de test réel (Android/iPhone). Penser à incrémenter
+  `CACHE_NAME` dans `sw.js` à chaque future mise à jour notable.
+
+## Les 3 étapes demandées le 5 juillet sont terminées
+1. ✅ Filet de sécurité automatique (v6.21, v6.21.1)
+2. ✅ Conversation guidée traduite en 6 langues (v6.22)
+3. ✅ PWA / mode hors-ligne (v6.23)
+
+Chaque étape a été vérifiée avant de passer à la suivante, comme
+demandé. Le filet de sécurité (étape 1) a été utile dès l'étape 2 —
+preuve que l'ordre choisi (sécurité d'abord) était le bon.
+
+**⚠️ IMPORTANT pour toute session future** : avant de livrer une
+modification touchant à une langue, aux exercices, ou au bilan, lancer
+`npm install && npm test` et vérifier que le filet de sécurité est vert.
+Ne pas se contenter de vérifications manuelles au cas par cas comme lors
+des sessions précédentes — c'est exactement ce qui a laissé passer le
+bug v6.20 plusieurs fois de suite.
 - **v6.10** : suite au retour "je ne vois toujours pas le personnage" —
   Ami était en fait bien affiché (bug v6.9 corrigé) mais trop discret
   pour être reconnu comme un personnage. Agrandi, nom "Ami" affiché,
@@ -122,6 +219,24 @@ juste pas vu le bouton de langue).
   (les media-queries CSS n'affectent pas SMIL). **Rendu visuel final
   toujours pas confirmé** — pas d'accès à un navigateur graphique dans
   cet environnement (Playwright bloqué par le réseau du bac à sable).
+  **✅ CONFIRMÉ résolu** par l'utilisateur après coup — la vraie cause du
+  blocage était l'hébergement (Netlify à court de crédits, puis un
+  premier essai GitHub Pages avec les dossiers css/js manquants suite à
+  un upload web incomplet), pas le code au-delà du bug `ry` sur
+  `<circle>`. Leçon pour la suite : face à un bug visuel qui résiste à
+  plusieurs correctifs qui semblent corrects, vérifier le déploiement
+  réel avant de continuer à modifier le code.
+- **v6.16** : retour "jeu de mémoire en français malgré l'anglais" —
+  confirmé, `js/memory.js` et `js/phonation.js` n'avaient jamais été
+  reliés à I18N. Traduits (texte simple, contrairement au kabyle). Reste
+  en français quelle que soit la langue : bilan initial et conversation
+  guidée (contenu de phrases, pas de simples libellés).
+- **Décision utilisateur (même session)** : pas de traduction kabyle pour
+  `memory.js`/`phonation.js` pour l'instant (pas prioritaire) — un mot
+  sourcé isolé ("ales" = recommencer, confirmé Glosbe + dictionnaire-
+  kabyle.com) ne suffisait pas à couvrir ces écrans, essentiellement
+  faits de phrases entières. Ne pas relancer ce chantier sans nouvelle
+  demande explicite de l'utilisateur.
 
 ## Garde-fous établis (ne pas les redécouvrir à chaque fois)
 

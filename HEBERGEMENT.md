@@ -127,3 +127,48 @@ Dans tous les cas, faites confirmer par l'hébergeur retenu qu'il est bien
 titulaire d'une certification HDS **en cours de validité** pour l'activité
 concernée (hébergement d'infrastructure et/ou plateforme, selon votre
 architecture), et demandez le certificat.
+
+## Mode hors-ligne / installation sur l'écran d'accueil (v6.23)
+
+Depuis la v6.23, l'app peut :
+- **s'installer** comme une icône sur l'écran d'accueil du téléphone
+  (comme une vraie app, sans passer par un store) ;
+- **fonctionner sans connexion internet** une fois visitée au moins une
+  fois (utile en salle d'attente, en zone mal couverte).
+
+### Comment tester
+
+**Sur Android (Chrome)** : après avoir visité le site une fois, Chrome
+propose normalement automatiquement "Ajouter à l'écran d'accueil" (ou
+via le menu ⋮ → "Installer l'application"). Ensuite, activez le mode
+avion et rouvrez l'app : elle doit continuer à fonctionner.
+
+**Sur iPhone (Safari)** : Safari ne propose pas d'installation
+automatique. Il faut : bouton Partager (le carré avec la flèche) →
+"Sur l'écran d'accueil". C'est une limitation d'Apple, pas de l'app.
+
+**Vérification technique (pour vous ou un développeur)** : Chrome →
+outils de développement (F12) → onglet "Application" → "Service
+Workers" doit montrer `sw.js` actif, et "Manifest" doit afficher les
+informations de l'app sans erreur.
+
+### Limites importantes à connaître
+
+- **Mode navigateur (sans compte cloud)** : fonctionne entièrement
+  hors-ligne après la première visite, exercices compris (les données
+  restent dans le navigateur).
+- **Mode cloud (compte Supabase)** : l'interface se charge même
+  hors-ligne, mais se connecter ou sauvegarder une séance nécessite
+  une connexion — ce n'est pas une vraie synchronisation différée pour
+  l'instant (ça pourrait être une amélioration future si besoin).
+- **Après chaque mise à jour de l'app** : le fichier `sw.js` a un
+  numéro de version (`CACHE_NAME`) qui doit être incrémenté à chaque
+  changement notable, sinon les téléphones continueront de servir
+  l'ancienne version en cache. C'est déjà fait pour cette version-ci ;
+  à ne pas oublier pour les prochaines.
+- **Non testé sur un vrai appareil** au moment de cette livraison — je
+  n'ai pas accès à un navigateur graphique dans mon environnement de
+  travail (voir le journal des versions dans `SKILL_ReParole_v6.md`
+  pour le détail de cette limite). Tout ce qui peut être vérifié sans
+  navigateur (fichiers présents, JSON valide, syntaxe) l'a été — mais le
+  comportement réel à l'installation reste à confirmer par vous.

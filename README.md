@@ -548,7 +548,26 @@ et le mode "lecture facilitée" de l'app elle-même — dans les deux cas,
 toute animation est intentionnellement coupée. Si le patient a l'un de
 ces réglages actif, Ami reste immobile par design, pas par bug.
 
-## v6.15 — animation des jambes/yeux réécrite en SVG natif
+## v6.15 — animation des jambes/yeux réécrite en SVG natif — ✅ CONFIRMÉ
+
+**Mise à jour finale** : le mouvement d'Ami a été confirmé visuellement
+par l'utilisateur après plusieurs jours d'aller-retours. La cause du
+blocage n'était en réalité **pas le code** au-delà du vrai bug `ry` sur
+`<circle>` (voir plus bas) : Netlify avait épuisé ses crédits et
+bloquait silencieusement les redéploiements (aucun message clair côté
+utilisateur), ce qui fait qu'aucune des corrections successives
+(v6.9.1, v6.14) n'a pu être testée dans son état réel avant celle-ci. Le
+premier essai de bascule vers GitHub Pages a aussi échoué une fois
+(dossiers `css/` et `js/` absents du dépôt suite à un upload web
+incomplet — l'interface de GitHub ne préserve pas toujours la structure
+des dossiers en drag-and-drop). Une fois ces deux problèmes d'hébergement
+réglés, le correctif SMIL ci-dessous a fonctionné du premier coup.
+
+**Leçon pour la suite** : en cas de bug visuel qui semble "résister" à
+plusieurs correctifs qui semblent tous corrects sur le papier, vérifier
+en priorité que le déploiement testé correspond réellement au code livré
+(hébergeur en panne, cache, upload incomplet) avant de continuer à
+modifier le code.
 
 Après plusieurs allers-retours (v6.9.1, v6.14) sans succès confirmé —
 et après avoir éliminé "réduire les animations" comme cause (vérifié
@@ -582,6 +601,251 @@ réel** — je n'ai pas d'accès à un navigateur graphique dans cet
 environnement (Playwright/Chromium bloqués par les restrictions
 réseau du bac à sable).
 
+## v6.16 — jeu de mémoire et tenue vocale traduits en anglais
+
+Retour : en anglais, le jeu de mémoire restait entièrement en français
+(titre, consignes, feedback). Vérification faite : `js/memory.js` et
+`js/phonation.js` n'avaient effectivement jamais été reliés à I18N,
+contrairement aux exercices principaux. Contrairement au kabyle, ce
+texte est simple (interface, pas de grammaire à risque) — traduit
+directement en anglais, y compris les phrases de sécurité de la tenue
+vocale (traduites avec le même soin que l'original, pas paraphrasées).
+
+Avec ceci, l'anglais couvre maintenant : l'interface générale, les 7
+exercices principaux (denomination, complétion, compréhension,
+répétition, dénomination orale, fluence, intonation), le jeu de mémoire,
+et la tenue vocale. **Restent en français quelle que soit la langue** :
+le bilan initial (`js/assessment.js`) et la conversation guidée
+(`js/conversation.js`) — contenu de phrases entières, pas de simples
+libellés d'interface, donc un vrai travail de traduction plus tard.
+
+## v6.17 — le bilan initial traduit en anglais
+
+Retour : à la création d'un nouveau dossier, le bilan initial
+(`js/assessment.js`) restait entièrement en français, y compris en
+anglais. C'était le plus gros morceau encore non traduit.
+
+Contrairement au kabyle, l'anglais ne pose pas de risque grammatical —
+traduit intégralement :
+- Les 3 domaines évalués (`ASSESS_DOMAINS` → `domainLabel()`)
+- Le questionnaire de ressenti (`SYMPTOM_QUESTIONS_EN`, mêmes clés et
+  valeurs que le français pour que le score reste comparable)
+- Les 9 items du bilan rapide (`ASSESS_ITEMS_EN`)
+- Tous les textes d'interface (accueil, dépôt de bilan, résultat final)
+- Réutilisation des clés déjà traduites ailleurs (`I18N.t('denom_prompt')`,
+  `levelName()`) plutôt que de dupliquer une traduction qui existait déjà
+
+Vérifié par simulation DOM sur tout le parcours (accueil → dépôt de
+bilan → questionnaire → bilan rapide → résultat final), en anglais et
+en français (non-régression confirmée sur le français).
+
+**Décision explicite de l'utilisateur** : pas de version kabyle de
+`memory.js`/`phonation.js` pour l'instant (voir plus haut) — ne pas
+relancer ce chantier sans nouvelle demande. Le bilan kabyle reste dans
+son état partiel existant (dénomination seulement, le reste avec repli
+français et notice, inchangé par cette mise à jour).
+
+## v6.18 — menu déroulant + 5 nouvelles langues (ES/IT/PT/DE/AR)
+
+**Interface** : le sélecteur de langue passe de boutons (illisible à 8
+langues) à un vrai menu déroulant (`<select>`), toujours généré
+automatiquement depuis `LANGUAGES` dans `js/i18n.js` — ajouter une
+langue reste une seule modification, sans toucher au HTML.
+
+**5 nouvelles langues, niveau "interface complète"** (comme l'anglais
+au départ) : espagnol, italien, portugais, allemand, arabe. Couvrent :
+- L'interface générale (connexion, tableau de bord, statistiques)
+- La liste des exercices (titres et descriptions)
+- Le jeu de mémoire et la tenue vocale (texte de sécurité traduit avec
+  le même soin que l'original)
+- Les phrases d'Ami (`js/companion.js`)
+- Les messages du moteur adaptatif (paliers de niveau, fatigue, ce que
+  l'IA a appris)
+
+**Arabe** : `dir:'rtl'` déjà pris en charge par le mécanisme existant
+(`I18N.apply()` bascule `<html dir="...">` automatiquement). Vérifié
+par simulation DOM ; **le rendu visuel RTL réel (alignement des boutons,
+mise en page générale) reste à confirmer sur un vrai navigateur** — je
+ne peux pas le juger depuis une simulation de structure seule.
+
+**Ce qui n'est PAS encore traduit dans ces 5 langues** (comme pour
+l'anglais à ses débuts) : le contenu des exercices eux-mêmes (mots à
+deviner, phrases à compléter) et le bilan initial. Ces éléments
+retombent automatiquement en français pour l'instant, sans mélange
+silencieux (le mécanisme de repli de `I18N.t()` s'applique). Prochaine
+étape si demandé : les banques d'exercices (`BANK_ES`, `BANK_IT`,
+`BANK_PT`, `BANK_DE`, `BANK_AR`) et `assessment.js`, langue par langue,
+comme cela a été fait pour l'anglais.
+
+## v6.19 — exercices et bilan complets pour ES/IT/PT/DE/AR
+
+Suite à la demande explicite de couvrir chaque langue entièrement (pas
+seulement l'interface) : les 5 langues ajoutées en v6.18 ont maintenant
+leur propre contenu d'exercices et de bilan initial, au même niveau que
+l'anglais.
+
+- **`js/exercises-es.js`, `-it.js`, `-pt.js`, `-de.js`, `-ar.js`** :
+  même structure que `exercises-en.js` (7 types d'exercices × 3
+  niveaux), mêmes images/emojis pour rester cohérent, vocabulaire
+  traduit. Sélection automatique déjà généralisée dans `js/app.js`
+  depuis la v6.9 (`window['BANK_'+lang.toUpperCase()]`) — aucune
+  modification nécessaire côté moteur d'exercices.
+- **`js/assessment.js`** : `domainLabel()`, `symptomQuestions()` et
+  `assessItems()` généralisés (avant : anglais codé en dur) pour
+  chercher automatiquement `ASSESS_DOMAIN_LABELS_XX`,
+  `SYMPTOM_QUESTIONS_XX`, `ASSESS_ITEMS_XX` selon la langue active.
+  Ajout du contenu correspondant pour les 5 langues, plus les textes
+  d'interface du bilan (`ASSESS_STRINGS`).
+
+**Arabe** : vocabulaire et grammaire standard (arabe classique/moderne),
+avec attention portée aux accords de genre. Comme pour les autres
+langues largement dotées de ressources, la confiance grammaticale est
+bonne — mais une relecture native reste recommandée avant un usage
+clinique réel, comme le rappelle le disclaimer déjà présent dans l'app
+("ne remplace pas un bilan orthophonique").
+
+Vérifié par simulation DOM : bilan complet (accueil → résultat) et
+lancement d'un exercice de dénomination, dans les 5 langues.
+
+**Kabyle non concerné** par cette mise à jour — reste dans son état
+existant (dénomination sourcée, reste en français avec repli
+documenté), conformément aux décisions précédentes de l'utilisateur.
+
+## v6.20 — vrai bug corrigé : le bilan retombait en français pour les 5 langues
+
+Retour (capture d'écran, mode arabe) : les questions du questionnaire de
+ressenti et les libellés de domaine du bilan restaient en français,
+malgré une interface arabe par ailleurs correcte. Et le compteur
+affichait "4 / 1" au lieu de "1 / 4".
+
+**Cause réelle, pas juste un oubli de contenu** : `domainLabel()`,
+`symptomQuestions()` et `assessItems()` cherchaient les tables de
+traduction via `window['ASSESS_ITEMS_'+lang]` etc., mais ces tables
+étaient déclarées avec `const` — qui, contrairement à `window.X = ...`,
+**ne s'attache jamais à l'objet `window`**, même dans le même fichier.
+Ces recherches renvoyaient donc toujours `undefined`, et retombaient sur
+le français, silencieusement. **Ce bug touchait les 5 langues (ES, IT,
+PT, DE, AR), pas seulement l'arabe** — l'arabe l'a simplement rendu
+visible en premier, car le contraste avec une interface RTL par
+ailleurs correcte saute plus aux yeux.
+
+Corrigé : toutes ces tables (`ASSESS_DOMAIN_LABELS_*`,
+`SYMPTOM_QUESTIONS_*`, `ASSESS_ITEMS_*`) déclarées via `window.X = ...`,
+comme le fait déjà `window.BANK_XX` dans les fichiers d'exercices
+(`exercises-en.js` etc.), qui n'avaient pas ce problème.
+
+**Deuxième correctif, RTL** : le compteur "1 / 4" s'affichait inversé en
+arabe ("4 / 1") — un chiffre-slash-chiffre isolé dans un contexte
+`dir="rtl"` peut être réordonné visuellement par l'algorithme
+bidirectionnel du navigateur. Corrigé en forçant `dir="ltr"` sur ces
+compteurs spécifiquement (bilan et exercices), sans toucher au reste de
+la mise en page RTL.
+
+Vérifié par simulation DOM : questions de ressenti et libellés de
+domaine corrects dans les 5 langues, compteur affiché "1 / 4" partout.
+
+## v6.21 — filet de sécurité automatique pour les traductions
+
+Après plusieurs bugs de traduction passés inaperçus jusqu'à ce qu'un
+patient les voie à l'écran (v6.20 notamment), un script qui vérifie
+automatiquement la cohérence de toutes les langues, à lancer **avant**
+toute livraison touchant à une langue :
+
+```
+npm install
+npm test
+```
+
+Ce que `tests/i18n-completeness.test.js` vérifie :
+- Pour chaque langue, toutes les clés de `I18N_STRINGS.fr`,
+  `ASSESS_STRINGS.fr` et `COMPANION_PHRASES.fr` existent aussi dans
+  cette langue (sauf 2 exceptions documentées, spécifiques au kabyle).
+- Pour EN/ES/IT/PT/DE/AR : présence réelle de `window.BANK_XX`,
+  `window.ASSESS_ITEMS_XX`, `window.SYMPTOM_QUESTIONS_XX`,
+  `window.ASSESS_DOMAIN_LABELS_XX` — et surtout, que ce sont de
+  **vraies propriétés de `window`**, pas des `const` orphelins
+  invisibles pour le code qui les cherche dynamiquement (exactement le
+  bug de la v6.20).
+- Pour chaque banque d'exercices, que les 3 niveaux de chaque type
+  d'exercice sont bien remplis.
+
+**Testé pour de vrai** : un bug a été volontairement réintroduit
+(`window.ASSESS_ITEMS_ES` remis en `const`), le script l'a détecté
+correctement, puis a confirmé la correction une fois réparé.
+
+**Bonus trouvé en cours de route** : `I18N_STRINGS` et `ASSESS_STRINGS`
+avaient exactement la même fragilité que le bug v6.20 (déclarés en
+`const`, jamais exposés sur `window`) — sans conséquence visible
+jusqu'ici par pure chance, puisque seules des fonctions du même fichier
+les utilisaient. Corrigé par précaution (`window.I18N_STRINGS = ...`,
+`window.ASSESS_STRINGS = ...`), avant que ça ne devienne un vrai bug.
+
+## v6.22 — la conversation guidée traduite en 6 langues
+
+Dernier gros morceau non traduit : `js/conversation.js` (3 mises en
+situation — médecin, café, téléphone — 4 échanges chacune). Traduit en
+EN/ES/IT/PT/DE/AR, même structure que le reste (`window.CONV_SCENARIOS_XX`,
+sélection automatique). Le kabyle n'est pas concerné (scénarios de
+dialogue entiers, hors de portée sans relecture native, même règle que
+le reste du kabyle).
+
+Corrigé au passage :
+- La reconnaissance vocale de la conversation restait câblée en
+  `fr-FR` — oubli du passage multilingue. Utilise maintenant
+  `I18N.speechLocale()` comme le reste de l'app.
+- La notice "conversation non traduite" s'affichait pour *toutes* les
+  langues non françaises — elle ne s'affiche plus que pour celles qui
+  n'ont vraiment pas de contenu (le kabyle).
+
+**Le filet de sécurité (v6.21) a servi dès la première utilisation** :
+il a détecté que les clés d'interface de la conversation (`conv_*`)
+avaient été oubliées pour le portugais — corrigé immédiatement, avant
+toute livraison. Sans cet outil, ça serait probablement passé inaperçu
+jusqu'à ce qu'un patient le voie, comme les fois précédentes.
+
+Vérifié aussi par un vrai parcours simulé (pas seulement la structure) :
+menu → démarrage d'un scénario → bonne réponse → progression à l'étape
+suivante, dans les 6 langues.
+
+## v6.23 — mode hors-ligne + installation sur l'écran d'accueil (PWA)
+
+Dernière étape de la feuille de route initiale : l'app peut maintenant
+s'installer comme une icône sur le téléphone et fonctionner sans
+connexion internet.
+
+**Nouveaux fichiers** :
+- `manifest.json` — nom, icônes, couleurs, mode d'affichage
+- `sw.js` — service worker : met en cache les fichiers de l'app pour
+  qu'elle continue de fonctionner hors-ligne après une première visite
+- `icons/` — icônes générées aux formats requis (192×192, 512×512,
+  512×512 "maskable" pour Android, 180×180 pour iOS), reprenant le
+  logo existant (rond vert + point orange)
+
+**Ce que ça change concrètement** :
+- Mode navigateur (sans compte cloud) : fonctionne entièrement
+  hors-ligne, exercices compris, après une première visite.
+- Mode cloud (compte Supabase) : l'interface se charge même
+  hors-ligne, mais connexion/sauvegarde restent impossibles sans
+  réseau (pas de synchronisation différée pour l'instant).
+
+**Vérifié sans navigateur** (voir limite plus bas) : JSON du manifest
+valide, tous les fichiers listés dans le cache existent réellement
+(un seul manquant ferait échouer tout le cache au premier chargement),
+et — nouveau test ajouté au filet de sécurité — tous les fichiers
+CSS/JS chargés par `index.html` sont bien inclus dans le cache
+hors-ligne (testé pour de vrai : un fichier volontairement oublié a
+été détecté correctement).
+
+**Non testé sur un vrai appareil** — je n'ai pas accès à un navigateur
+graphique dans cet environnement (même limite que pour l'animation
+d'Ami). Voir `HEBERGEMENT.md`, section "Mode hors-ligne", pour la
+marche à suivre précise pour tester sur Android et iPhone.
+
+**Point d'attention pour les prochaines mises à jour** : le fichier
+`sw.js` a un numéro de version (`CACHE_NAME`) qui doit être incrémenté
+à chaque changement notable de l'app, sinon les téléphones continueront
+de servir une ancienne version mise en cache.
+
 ## Tester
 
 ```
@@ -591,6 +855,9 @@ Ouvrez Chrome sur `http://localhost:8000`. Pour tester l'auth réelle,
 configurez d'abord le mode cloud (voir plus haut) — sans lui, l'app
 tourne en mode navigateur (localStorage), sans compte ni RLS puisqu'il
 n'y a pas de serveur à protéger.
+
+Pour lancer les tests automatisés (moteur adaptatif + cohérence des
+traductions + cohérence du mode hors-ligne) : `npm install && npm test`.
 
 ```
 node tests/learner.test.js
