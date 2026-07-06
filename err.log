@@ -1,0 +1,108 @@
+Error: Not implemented: window.scrollTo
+    at module.exports (/home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at /home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/Window.js:962:7
+    at show (eval at loadDashboard (/home/claude/reparole/extracted/reparole-v6/tests/ortho-security.test.js:63:21), <anonymous>:31:159)
+    at Object._handleSignInResult (eval at loadDashboard (/home/claude/reparole/extracted/reparole-v6/tests/ortho-security.test.js:63:21), <anonymous>:123:5)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.signIn (eval at loadDashboard (/home/claude/reparole/extracted/reparole-v6/tests/ortho-security.test.js:63:21), <anonymous>:106:5)
+    at async /home/claude/reparole/extracted/reparole-v6/tests/ortho-security.test.js:168:5 undefined
+Error: Not implemented: window.scrollTo
+    at module.exports (/home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at /home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/Window.js:962:7
+    at show (eval at loadDashboard (/home/claude/reparole/extracted/reparole-v6/tests/ortho-security.test.js:63:21), <anonymous>:31:159)
+    at Object._handleSignInResult (eval at loadDashboard (/home/claude/reparole/extracted/reparole-v6/tests/ortho-security.test.js:63:21), <anonymous>:123:5)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.signIn (eval at loadDashboard (/home/claude/reparole/extracted/reparole-v6/tests/ortho-security.test.js:63:21), <anonymous>:106:5)
+    at async /home/claude/reparole/extracted/reparole-v6/tests/ortho-security.test.js:198:5 undefined
+Error: Not implemented: window.scrollTo
+    at module.exports (/home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at /home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/Window.js:962:7
+    at show (eval at loadDashboard (/home/claude/reparole/extracted/reparole-v6/tests/ortho-security.test.js:63:21), <anonymous>:31:159)
+    at Object._handleSignInResult (eval at loadDashboard (/home/claude/reparole/extracted/reparole-v6/tests/ortho-security.test.js:63:21), <anonymous>:123:5)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Object.signIn (eval at loadDashboard (/home/claude/reparole/extracted/reparole-v6/tests/ortho-security.test.js:63:21), <anonymous>:106:5)
+    at async /home/claude/reparole/extracted/reparole-v6/tests/ortho-security.test.js:204:5 undefined
+Error: Could not load link: "http://localhost/css/style.css"
+    at onErrorWrapped (/home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/resources/per-document-resource-loader.js:38:19)
+    at Object.check (/home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/resources/resource-queue.js:72:23)
+    at /home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/resources/resource-queue.js:124:14
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5) Error: connect ECONNREFUSED 127.0.0.1:80
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 80
+}
+Error: Could not load link: "http://localhost/css/ortho.css"
+    at onErrorWrapped (/home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/resources/per-document-resource-loader.js:38:19)
+    at Object.check (/home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/resources/resource-queue.js:72:23)
+    at /home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/resources/resource-queue.js:124:14
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5) Error: connect ECONNREFUSED 127.0.0.1:80
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 80
+}
+Error: Could not load link: "http://localhost/css/style.css"
+    at onErrorWrapped (/home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/resources/per-document-resource-loader.js:38:19)
+    at Object.check (/home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/resources/resource-queue.js:72:23)
+    at /home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/resources/resource-queue.js:124:14
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5) Error: connect ECONNREFUSED 127.0.0.1:80
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 80
+}
+Error: Could not load link: "http://localhost/css/ortho.css"
+    at onErrorWrapped (/home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/resources/per-document-resource-loader.js:38:19)
+    at Object.check (/home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/resources/resource-queue.js:72:23)
+    at /home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/resources/resource-queue.js:124:14
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5) Error: connect ECONNREFUSED 127.0.0.1:80
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 80
+}
+Error: Not implemented: window.scrollTo
+    at module.exports (/home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at /home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/Window.js:962:7
+    at show (eval at loadDashboard (/home/claude/reparole/extracted/reparole-v6/tests/ortho-security.test.js:63:21), <anonymous>:31:159)
+    at Document.init (eval at loadDashboard (/home/claude/reparole/extracted/reparole-v6/tests/ortho-security.test.js:63:21), <anonymous>:51:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5) undefined
+Error: Could not load link: "http://localhost/css/style.css"
+    at onErrorWrapped (/home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/resources/per-document-resource-loader.js:38:19)
+    at Object.check (/home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/resources/resource-queue.js:72:23)
+    at /home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/resources/resource-queue.js:124:14
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5) Error: connect ECONNREFUSED 127.0.0.1:80
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 80
+}
+Error: Could not load link: "http://localhost/css/ortho.css"
+    at onErrorWrapped (/home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/resources/per-document-resource-loader.js:38:19)
+    at Object.check (/home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/resources/resource-queue.js:72:23)
+    at /home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/resources/resource-queue.js:124:14
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5) Error: connect ECONNREFUSED 127.0.0.1:80
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 80
+}
+Error: Not implemented: window.scrollTo
+    at module.exports (/home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at /home/claude/reparole/extracted/reparole-v6/node_modules/jsdom/lib/jsdom/browser/Window.js:962:7
+    at show (eval at loadDashboard (/home/claude/reparole/extracted/reparole-v6/tests/ortho-security.test.js:63:21), <anonymous>:31:159)
+    at Document.init (eval at loadDashboard (/home/claude/reparole/extracted/reparole-v6/tests/ortho-security.test.js:63:21), <anonymous>:51:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5) undefined
