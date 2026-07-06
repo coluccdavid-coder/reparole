@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReParole — Espace orthophoniste</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/ortho.css">
+</head>
+<body>
+
+<!-- ============ LOGIN ORTHO ============ -->
+<div id="ortho-login" class="screen active">
+  <div class="wrap">
+    <div class="login-card">
+      <div class="brand" style="justify-content:center;font-size:1.7rem"><span class="dot"></span>ReParole</div>
+      <div class="lang-switch" data-lang-switcher style="display:flex;justify-content:center;gap:8px;margin-bottom:14px"></div>
+      <h1 data-i18n="ortho_title">Espace orthophoniste</h1>
+      <p class="sub" data-i18n="ortho_sub">Suivi des patients, analyse des erreurs, rapports.</p>
+      <div id="cloud-warning" class="cloud-warning" style="display:none" data-i18n="ortho_cloud_warning">
+        ⚠️ Le mode cloud n'est pas configuré côté serveur. L'espace orthophoniste a besoin du mode cloud : un vrai compte et la vue multi-patients ne peuvent pas exister en mode navigateur seul.
+      </div>
+      <div id="ortho-auth-form">
+        <div class="field" id="o-name-field"><label for="o-name" data-i18n="o_name_label">Votre nom</label><input id="o-name" type="text" data-i18n-placeholder="o_name_ph" placeholder="Ex : Camille Dupont"></div>
+        <div class="field"><label for="o-email" data-i18n="o_email_label">Email professionnel</label><input id="o-email" type="email" placeholder="vous@cabinet.fr" autocomplete="username"></div>
+        <div class="field"><label for="o-password" data-i18n="o_password_label">Mot de passe</label><input id="o-password" type="password" data-i18n-placeholder="o_password_ph" placeholder="8 caractères minimum" autocomplete="current-password"></div>
+        <button class="btn-primary" id="o-submit" data-i18n="ortho_btn_signin" onclick="OrthoApp.signIn()">Se connecter</button>
+        <p class="hint" id="ortho-auth-error" style="color:var(--error)"></p>
+        <p class="hint" style="margin-top:16px">
+          <span id="ortho-toggle-text" data-i18n="ortho_toggle_no_account">Pas encore de compte ?</span>
+          <a href="#" onclick="OrthoApp.toggleAuthMode();return false" id="ortho-toggle-link" style="color:var(--accent)" data-i18n="ortho_create_account">Créer un compte</a>
+        </p>
+      </div>
+      <p class="hint" data-i18n="ortho_secure_note">🔒 Compte réel, protégé par des règles d'accès en base de données — voir README.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DÉFI DOUBLE AUTHENTIFICATION (à la connexion) ============ -->
+<div id="ortho-mfa-challenge" class="screen">
+  <div class="wrap">
+    <div class="login-card">
+      <div class="brand" style="justify-content:center;font-size:1.7rem"><span class="dot"></span>ReParole</div>
+      <h1 data-i18n="mfa_challenge_title">Code de sécurité</h1>
+      <p class="sub" data-i18n="mfa_challenge_sub">Entrez le code à 6 chiffres affiché par votre application d'authentification.</p>
+      <div class="field"><label for="mfa-code" data-i18n="mfa_code_label">Code à 6 chiffres</label><input id="mfa-code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" maxlength="6"></div>
+      <button class="btn-primary" data-i18n="btn_validate" onclick="OrthoApp.submitMfaCode()">Valider</button>
+      <p class="hint" id="ortho-mfa-error" style="color:var(--error)"></p>
+      <p class="hint" style="margin-top:16px"><a href="#" onclick="OrthoApp.cancelMfaChallenge();return false" style="color:var(--accent)" data-i18n="mfa_cancel_link">← Annuler et revenir à la connexion</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ LISTE DES PATIENTS ============ -->
+<div id="ortho-list" class="screen">
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>ReParole <span class="pro-tag" data-i18n="ortho_pro_tag">Pro</span></div>
+    <div class="who"><span id="ortho-who"></span>
+      <div class="lang-switch" data-lang-switcher style="display:inline-flex;gap:8px;margin:0 10px"></div>
+      <button class="btn-ghost" onclick="OrthoApp.logout()" data-i18n="ortho_quit">Quitter</button>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="greeting">
+      <h2 data-i18n="ortho_your_patients">Vos patients</h2>
+      <p data-i18n="ortho_patients_sub">Analyse automatique des erreurs, pas de diagnostic — vous restez décisionnaire.</p>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="ortho_security_title">Sécurité du compte</h3>
+      <p style="color:var(--ink-soft);font-size:.88rem;margin-bottom:12px" data-i18n="ortho_mfa_desc">
+        Double authentification (code à usage unique via une application comme Google Authenticator, Authy, 1Password...).
+        Fortement recommandé pour un compte qui donne accès à des données de patients.
+      </p>
+      <p class="hint"><span data-i18n="ortho_status_label">Statut :</span> <b id="mfa-status" data-i18n="mfa_status_checking">Vérification…</b></p>
+      <div id="mfa-enroll-step1">
+        <button class="btn-primary" data-i18n="ortho_mfa_enable_btn" onclick="OrthoApp.startMfaEnroll()">Activer la double authentification</button>
+      </div>
+      <div id="mfa-enroll-step2" style="display:none;margin-top:14px">
+        <p style="font-size:.88rem;color:var(--ink-soft)" data-i18n="mfa_step1">1. Scannez ce code avec votre application d'authentification :</p>
+        <div id="mfa-qr" style="margin:12px 0;max-width:200px"></div>
+        <p style="font-size:.85rem;color:var(--ink-soft)"><span data-i18n="mfa_manual_key_label">Ou entrez cette clé manuellement :</span> <code id="mfa-secret" style="font-size:.8rem;word-break:break-all"></code></p>
+        <p style="font-size:.88rem;color:var(--ink-soft);margin-top:12px" data-i18n="mfa_step2">2. Entrez le code à 6 chiffres affiché par l'application pour confirmer :</p>
+        <div class="field" style="margin:10px 0"><input id="mfa-confirm-code" type="text" inputmode="numeric" placeholder="123456" maxlength="6"></div>
+        <button class="btn-primary" data-i18n="mfa_confirm_btn" onclick="OrthoApp.confirmMfaEnroll()">Confirmer l'activation</button>
+      </div>
+      <button class="btn-ghost" id="mfa-disable-btn" style="display:none;margin-top:10px" data-i18n="mfa_disable_btn" onclick="OrthoApp.disableMfa()">Désactiver la double authentification</button>
+      <p id="mfa-enroll-msg" class="hint"></p>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="ortho_assign_title">Rattacher un patient</h3>
+      <p style="color:var(--ink-soft);font-size:.88rem;margin-bottom:12px" data-i18n="ortho_assign_desc">
+        Entrez le code de suivi déjà utilisé par le patient dans l'application (ou créez-en un nouveau avec lui).
+      </p>
+      <div class="field" style="margin-bottom:10px"><input id="assign-code" type="text" data-i18n-placeholder="assign_code_ph" placeholder="Code de suivi du patient"></div>
+      <button class="btn-primary" data-i18n="ortho_assign_btn" onclick="OrthoApp.assign()">Ajouter à mon suivi</button>
+      <p id="assign-msg" class="hint"></p>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="ortho_records_title">Dossiers suivis</h3>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <label for="sort-patients" style="font-size:.85rem;color:var(--ink-soft)" data-i18n="sort_by_label">Trier par :</label>
+        <select id="sort-patients" onchange="OrthoApp.refreshList()" style="padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;font-family:inherit;font-size:.85rem">
+          <option value="inactivity" data-i18n="sort_inactivity">Inactivité (à recontacter en premier)</option>
+          <option value="success_asc" data-i18n="sort_success_asc">Réussite la plus faible</option>
+          <option value="success_desc" data-i18n="sort_success_desc">Réussite la plus forte</option>
+          <option value="name" data-i18n="sort_name">Nom</option>
+        </select>
+      </div>
+      <p class="hint" style="margin-bottom:10px" data-i18n="ortho_inactivity_hint">🔴 Aucune séance depuis plus de 7 jours — peut valoir un rappel.</p>
+      <div id="patient-list" class="patient-list"><p class="hint" data-i18n="loading_ellipsis">Chargement…</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DÉTAIL PATIENT ============ -->
+<div id="ortho-detail" class="screen">
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>ReParole <span class="pro-tag" data-i18n="ortho_pro_tag">Pro</span></div>
+    <div class="who"><button class="btn-ghost" onclick="OrthoApp.backToList()" data-i18n="back_to_patients">← Patients</button></div>
+  </div>
+  <div class="wrap">
+    <div class="greeting">
+      <h2 id="d-name"></h2>
+      <div class="level-badge"><span data-i18n="level_current_label">📊 Niveau actuel :</span> <span id="d-level"></span></div>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="clinical_profile_title">Profil clinique (facultatif)</h3>
+      <p style="color:var(--ink-soft);font-size:.85rem;margin-bottom:12px" data-i18n="clinical_profile_desc">
+        Réglé par vous uniquement — jamais déduit automatiquement. Il pondère légèrement les
+        recommandations d'exercices du patient (ex : plus de production pour un profil de type Broca).
+      </p>
+      <select id="d-clinical" onchange="OrthoApp.saveClinicalProfile()" style="width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;font-family:inherit;font-size:.95rem"></select>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="key_numbers_title">Chiffres clés</h3>
+      <div class="stats">
+        <div class="stat"><div class="num" id="d-sessions">0</div><div class="lab" data-i18n="stat_sessions">séances</div></div>
+        <div class="stat"><div class="num" id="d-success">—</div><div class="lab" data-i18n="stat_success">réussite</div></div>
+        <div class="stat"><div class="num" id="d-streak">0</div><div class="lab" data-i18n="stat_streak">jours d'affilée</div></div>
+      </div>
+      <div id="d-chart" style="margin-top:16px"></div>
+      <p id="d-trend" style="color:var(--ink-soft);font-size:.85rem;margin-top:6px"></p>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="error_analysis_title">Analyse des erreurs</h3>
+      <p class="disclaimer" data-i18n="error_analysis_disclaimer">⚠️ Piste de lecture automatique, pas un diagnostic. Catégories : sens, sonorité, structure de phrase, absence de réponse.</p>
+      <div id="d-dominant" class="dominant-box"></div>
+      <div id="d-errors" class="error-bars"></div>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="session_history_title">Historique des séances</h3>
+      <div id="d-history" class="history-table"></div>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="patient_photos_title">Photos personnelles du patient</h3>
+      <div id="d-media" class="media-grid"></div>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="clinical_notes_title">Notes cliniques</h3>
+      <p style="color:var(--ink-soft);font-size:.85rem;margin-bottom:10px" data-i18n="clinical_notes_desc">Notes libres, visibles uniquement dans cet espace professionnel.</p>
+      <div id="d-notes" class="history-table" style="margin-bottom:12px"></div>
+      <textarea id="new-note" rows="3" data-i18n-placeholder="new_note_ph" placeholder="Ajouter une note…" style="width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;font-family:inherit;font-size:.9rem;resize:vertical"></textarea>
+      <button class="btn-primary" style="margin-top:10px" data-i18n="add_note_btn" onclick="OrthoApp.addNote()">Ajouter la note</button>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="report_title">Rapport</h3>
+      <p style="color:var(--ink-soft);font-size:.88rem;margin-bottom:12px" data-i18n="report_desc">Génère un rapport imprimable / exportable en PDF depuis le navigateur.</p>
+      <button class="btn-primary" data-i18n="generate_report_btn" onclick="OrthoApp.openReport()">📄 Générer le rapport</button>
+      <div id="d-reports" class="hint" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="export_title">Export des données</h3>
+      <p style="color:var(--ink-soft);font-size:.85rem;margin-bottom:12px" data-i18n="export_desc">Export CSV des séances et des erreurs journalisées, pour une analyse externe.</p>
+      <button class="btn-ghost" data-i18n="export_sessions_btn" onclick="OrthoApp.exportCSV('sessions')">⬇️ Séances (CSV)</button>
+      <button class="btn-ghost" style="margin-left:10px" data-i18n="export_errors_btn" onclick="OrthoApp.exportCSV('errors')">⬇️ Erreurs (CSV)</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/prefs.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/learner.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/dashboard-ortho.js"></script>
+<script>Prefs.load();</script>
+</body>
+</html>
