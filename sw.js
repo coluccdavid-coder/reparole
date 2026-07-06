@@ -27,7 +27,7 @@
 //  changement touchant à plusieurs fichiers.
 // =====================================================================
 
-const CACHE_NAME = 'reparole-v6-25';
+const CACHE_NAME = 'reparole-v6-26';
 
 const APP_SHELL = [
   './',
