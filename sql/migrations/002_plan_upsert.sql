@@ -26,6 +26,13 @@
 --  patient en Pro depuis l'app, en mode cloud :
 -- =====================================================================
 
+-- v6.30bis : sur certaines bases existantes, la colonne "plan" elle-même
+-- n'a jamais été créée (le `alter table` prévu à cet effet, à la fin de
+-- schema.sql, n'a jamais été exécuté séparément). Ces deux lignes sont
+-- idempotentes (`if not exists`) : sans danger si la colonne existe déjà.
+alter table patients      add column if not exists plan text not null default 'free' check (plan in ('free','pro'));
+alter table orthophonists add column if not exists plan text not null default 'free' check (plan in ('free','pro'));
+
 create or replace function upsert_patient(
   p_code text, p_name text, p_level int, p_sessions int,
   p_correct int, p_total int, p_streak int,
