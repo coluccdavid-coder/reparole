@@ -1,13 +1,19 @@
 ---
 name: reparole-pro-v6
-description: Reprise du projet ReParole Pro (v6.6) — application web de rééducation orthophonique post-AVC, à mini prix, pour aider un maximum de personnes en attente d'un rendez-vous avec un·e orthophoniste. Contient l'historique des décisions, l'état d'avancement, les garde-fous établis et la structure des fichiers, pour reprendre le développement sans tout ré-expliquer.
+description: Reprise du projet ReParole Pro (v6.24) — application web de rééducation orthophonique post-AVC, à mini prix, pour aider un maximum de personnes en attente d'un rendez-vous avec un·e orthophoniste. Contient l'historique des décisions, l'état d'avancement, les garde-fous établis et la structure des fichiers, pour reprendre le développement sans tout ré-expliquer.
 ---
 
-# ReParole Pro — document de reprise (v6.6)
+# ReParole Pro — document de reprise (v6.24)
 
 Ce fichier résume tout ce qu'il faut savoir pour continuer ce projet dans
 une nouvelle conversation. Donnez-le à Claude en début de session, avec
-le zip du projet (`reparole-site-v6.zip` ou la version la plus récente).
+le zip du projet (la version la plus récente livrée).
+
+**⚠️ Session en cours au moment de la rédaction de ce fichier** — voir la
+section "v6.24 — EN COURS" plus bas avant toute chose : plusieurs
+fonctionnalités (double authentification notamment) sont écrites mais
+pas encore vérifiées, et une action de l'utilisateur (créer un projet
+Supabase) est attendue.
 
 ## Objectif du projet (à ne jamais perdre de vue)
 
@@ -17,6 +23,14 @@ rendez-vous** avec un·e orthophoniste. Ce n'est PAS un substitut à un
 suivi professionnel — c'est un outil d'appui, à coût minimal, largement
 accessible (hébergement à bas coût : site statique + paliers gratuits
 Netlify/Supabase pour limiter les frais, pas nécessairement 0€ à terme).
+
+**Nuance apparue en v6.24** : une structure gratuit/pro a été introduite
+(voir plus bas) à la demande explicite de l'utilisateur. Garder à
+l'esprit la tension avec l'objectif "aider un maximum de personnes" —
+les seuils choisis (5 séances/jour gratuites, français toujours
+gratuit) essaient de rester raisonnables, mais si une future demande
+pousse à restreindre plus fortement l'accès gratuit, ça vaut la peine de
+le signaler à l'utilisateur plutôt que d'exécuter sans recul.
 
 ## Qui est l'utilisateur, concrètement
 
@@ -170,12 +184,150 @@ Chaque étape a été vérifiée avant de passer à la suivante, comme
 demandé. Le filet de sécurité (étape 1) a été utile dès l'étape 2 —
 preuve que l'ordre choisi (sécurité d'abord) était le bon.
 
+## v6.24 — EN COURS au moment de la reprise (5 juillet, fin de session)
+
+Demande de l'utilisateur : (1) mettre en place le vrai mode cloud
+Supabase (l'espace orthophoniste en a besoin, actuellement non
+configuré), (2) une structure gratuit/pro avec un mélange de limites
+(séances/jour, nombre de patients suivis, exercices/langues réservés),
+(3) un compte test avec mot de passe renforcé et double authentification
+(TOTP, type Google Authenticator).
+
+**Précision obtenue de l'utilisateur** : pas de vrai système de paiement
+pour l'instant — juste la structure gratuit/pro, activation manuelle en
+attendant (voir `sql/schema.sql`, section v6.24, pour la commande SQL).
+
+### Ce qui est fait ET vérifié par simulation (fiable)
+- **Structure gratuit/pro côté patient** (`js/app.js`) : constantes
+  `FREE_DAILY_SESSION_LIMIT` (5/jour), `FREE_LANGS` (français
+  seulement), `PRO_ONLY_TYPES` (repetition, denomination_orale,
+  fluence, intonation, conversation guidée). Fonctions `isPro()`,
+  `lockReason(type)`, `showUpsell(reason)`. Câblé dans
+  `startExercise()`, `Memory.start()`, `Phonation.intro()`,
+  `Conversation.start()`. **Testé avec 6 scénarios réels** (compte
+  gratuit/pro × langue × type × quota) — tous corrects. Voir le détail
+  dans les logs de cette session si besoin de les rejouer.
+- **Colonne `plan`** ajoutée aux tables `patients` et `orthophonists`
+  dans `sql/schema.sql` (`'free'` par défaut, avec migration `alter
+  table ... add column if not exists` pour une base déjà existante).
+- **Traductions `upsell_*`** ajoutées dans les 7 langues (fr + 6),
+  vérifiées par le filet de sécurité (`npm test` vert).
+
+### Ce qui est fait ET maintenant vérifié par simulation (v6.24, suite)
+- **`tests/ortho-security.test.js`** (nouveau, intégré à `npm test`) :
+  faux client Supabase simulé (`window.supabase.createClient` mocké,
+  imitant l'API MFA documentée : `signUp`, `signInWithPassword`,
+  `auth.mfa.{enroll,challenge,verify,listFactors,unenroll}`,
+  `getAuthenticatorAssuranceLevel`, `from().upsert()/maybeSingle()`).
+  Trois choses vérifiées bout en bout :
+  - **Mot de passe renforcé** (`OrthoApp._checkPasswordStrength()`) :
+    les 4 règles (longueur, minuscule, majuscule, chiffre) testées dans
+    les deux sens.
+  - **Limite de patients côté orthophoniste** (`ORTHO_FREE_PATIENT_LIMIT
+    = 3`) : bloque à 3/3 en gratuit, débloqué en `pro`, message affiché.
+  - **Double authentification TOTP complète** : inscription → connexion
+    sans MFA (pas encore activée) → activation via `OrthoApp` (mauvais
+    code refusé, bon code accepté) → reconnexion avec défi MFA exigé
+    (`mfaRequired`, `factorId`, `challengeId`) → code invalide refusé,
+    code valide termine la connexion → désactivation via `disableMfa()`
+    → plus de défi à la reconnexion suivante.
+  - **Bug du test précédent corrigé** : ce n'était pas seulement
+    `dom.window.Store` (inexistant) vs `dom.window.ReParoleStore` (le
+    bon nom, `js/storage.js` : `window.ReParoleStore = ReParoleStore;`).
+    Plus largement : une variable `let`/`const` déclarée dans un
+    `eval()` (donc dans `js/dashboard-ortho.js`, ex. `patients`,
+    `orthoPlan`) n'est PAS modifiable depuis un `eval()` séparé lancé
+    ensuite dans le test — une simple affectation `patients = ...` y
+    crée une variable globale à part, invisible du code de l'app. Le
+    test passe donc par de vraies fonctions de l'app (`refreshList()`,
+    `signIn()` après avoir muté le faux compte serveur) plutôt que par
+    des affectations directes. **Point de vigilance pour tout futur
+    test similaire** sur une variable de portée module de
+    `dashboard-ortho.js`.
+  - **Reste indispensable avant de livrer cette fonctionnalité comme
+    "terminée" pour de vrai** : un test manuel avec un vrai compte
+    Supabase et une vraie application TOTP (Google Authenticator etc.),
+    la simulation ne remplace pas ça — voir section suivante.
+
+### Ce qui attend l'utilisateur (bloquant, hors de ma portée)
+- ✅ **Projet Supabase créé** (`bwxlshedzpfaeszwktdx`, région eu-west-1).
+- ✅ **`sql/schema.sql` exécuté** avec succès (confirmé par capture du
+  SQL Editor : "Success. No rows returned").
+- ✅ **`SUPABASE_URL` et `SUPABASE_ANON_KEY` renseignées** dans
+  `js/storage.js` (v6.25). Point notable : ce projet utilise le nouveau
+  système de clés Supabase (`sb_publishable_...`), pas l'ancienne "anon
+  key" JWT — voir le commentaire dans `js/storage.js` pour le détail.
+  `CLOUD_ENABLED` vaut donc maintenant `true` en usage réel.
+- **Reste à faire par l'utilisateur** : créer le **compte test** demandé
+  (email + mot de passe renforcé via le formulaire "Créer un compte" de
+  l'espace ortho), puis activer sa double authentification via la
+  nouvelle carte "Sécurité du compte", et vérifier que la connexion
+  fonctionne vraiment de bout en bout (le mode cloud n'a encore jamais
+  été testé avec un vrai projet, seulement simulé — voir
+  `tests/ortho-security.test.js`).
+
+### Point de vigilance pour la suite
+Le piège récurrent de cette session (`const X` déclaré dans un fichier
+n'est PAS automatiquement accessible via `window.X` depuis un autre
+contexte, même si "ça a l'air d'être la même page") s'est reproduit une
+fois de plus, cette fois dans mon propre test, pas dans le code livré.
+**Toujours vérifier le nom réellement exposé sur `window` avant d'écrire
+un test** (`grep -n "window\." fichier.js` est le réflexe à avoir).
+
 **⚠️ IMPORTANT pour toute session future** : avant de livrer une
 modification touchant à une langue, aux exercices, ou au bilan, lancer
 `npm install && npm test` et vérifier que le filet de sécurité est vert.
 Ne pas se contenter de vérifications manuelles au cas par cas comme lors
 des sessions précédentes — c'est exactement ce qui a laissé passer le
 bug v6.20 plusieurs fois de suite.
+
+## v6.25 — bug de langue confirmé + première étape Supabase (6 juillet)
+
+- **Vrai bug confirmé par capture** : en changeant de langue (arabe →
+  français) DEPUIS le tableau de bord, les libellés statiques
+  (`data-i18n`) repassaient bien en français, mais l'accueil ("Bonjour
+  Marie"), le nom du niveau, le message d'Ami et l'encadré "Votre
+  assistant a appris" restaient figés dans l'ancienne langue — ces
+  éléments sont écrits directement en JS par `renderDashboard()`
+  (js/app.js), jamais recalculés par `I18N.apply()` qui ne touche que le
+  DOM marqué `data-i18n`. Corrigé via un hook optionnel
+  `onLangChange()` (js/app.js), appelé par `Prefs.apply()` (js/prefs.js)
+  après avoir appliqué la nouvelle langue : si le tableau de bord est
+  l'écran actif, il est entièrement re-rendu. Nouveau test
+  `tests/lang-switch-dashboard.test.js` (ajouté à `npm test`) : connexion
+  en arabe, changement vers le français, retour à l'arabe — vérifie que
+  l'accueil, le nom du niveau et le message d'Ami suivent réellement.
+  **Point de vigilance pour la suite** : ce même problème pourrait
+  exister sur d'autres écrans si un futur sélecteur de langue y est
+  ajouté (actuellement, il n'existe que sur l'écran de connexion et le
+  tableau de bord — voir `data-lang-switcher` dans `index.html`) ; si un
+  écran d'exercice/conversation en gagne un un jour, il faudra étendre
+  `onLangChange()` en conséquence.
+- **Mode cloud Supabase configuré (bout technique)** : `SUPABASE_URL`
+  (`https://bwxlshedzpfaeszwktdx.supabase.co`) et `SUPABASE_ANON_KEY`
+  renseignées dans `js/storage.js`. `sql/schema.sql` confirmé exécuté
+  avec succès sur ce projet ("Success. No rows returned", capture SQL
+  Editor). **Point notable découvert en cours de route** : ce projet
+  utilise le nouveau système de clés Supabase — plus d'ancienne "anon
+  key" (JWT `eyJ...`), remplacée par une "Publishable key"
+  (`sb_publishable_...`), avec en face une "Secret key"
+  (`sb_secret_...`) qui remplace `service_role`. Compatible tel quel
+  avec `createClient()` (confirmé par la doc Supabase, aucun changement
+  de code nécessaire), donc la clé publishable a été mise directement
+  dans `SUPABASE_ANON_KEY` — le nom de la constante n'a pas été renommé
+  pour rester cohérent avec le reste du fichier, mais le commentaire
+  au-dessus explique le changement de terminologie. **Vigilance** :
+  l'utilisateur a d'abord collé par erreur la clé *secrète* — jamais
+  utilisée, mais je lui ai conseillé de la régénérer par précaution
+  puisqu'elle avait transité en clair dans la conversation ; à vérifier
+  qu'il l'a bien fait avant de considérer ce point clos.
+  `CLOUD_ENABLED` vaut donc maintenant `true`. **Aucun test réel
+  effectué avec ce projet** (seulement la simulation de
+  `tests/ortho-security.test.js`, mise à jour pour forcer un mode local
+  dans ses propres tests même si les vraies clés sont maintenant
+  présentes dans le fichier). Reste à créer le compte test et vérifier
+  en vrai le flux MFA (voir section v6.24 ci-dessus, toujours valable).
+
 - **v6.10** : suite au retour "je ne vois toujours pas le personnage" —
   Ami était en fait bien affiché (bug v6.9 corrigé) mais trop discret
   pour être reconnu comme un personnage. Agrandi, nom "Ami" affiché,
@@ -289,37 +441,47 @@ bug v6.20 plusieurs fois de suite.
 - Envoi réel d'emails de rappel (mécanisme prêt, clé API à fournir par
   l'utilisateur — voir `js/reminders-edge-function.md`).
 
-## Structure des fichiers (v6.6)
+## Structure des fichiers (v6.24)
 
 ```
 reparole-v6/
-├── index.html                 ← app patient (dashboard, exercices, kabyle)
-├── dashboard-ortho.html       ← espace orthophoniste (auth réelle)
+├── index.html                 ← app patient (dashboard, exercices, PWA)
+├── dashboard-ortho.html       ← espace ortho (auth réelle + MFA)
 ├── report.html                ← rapport imprimable
+├── manifest.json              ← v6.23 : PWA (nom, icônes, couleurs)
+├── sw.js                      ← v6.23 : service worker (mode hors-ligne)
+├── icons/                     ← v6.23 : icônes PWA générées (192/512/apple-touch)
+├── package.json               ← v6.21 : dépendance jsdom pour les tests
 ├── README.md                  ← historique détaillé de TOUTES les versions
-├── RGPD.md, HEBERGEMENT.md    ← conformité (modèles, pas des avis pros)
+├── RGPD.md, HEBERGEMENT.md    ← conformité + section PWA hors-ligne (v6.23)
 ├── bilan-exemple.txt          ← exemple de fichier pour tester l'import bilan
-├── css/{style.css, ortho.css}
+├── css/{style.css, ortho.css, companion.css}
 ├── js/
-│   ├── prefs.js               ← préférences (dyslexie, langue)
-│   ├── i18n.js                ← traductions fr/kab + registre LANGUAGES extensible
-│   ├── exercises.js           ← BANK (contenu français), + BANK_EXTEND()
+│   ├── prefs.js               ← préférences (dyslexie, langue, menu déroulant v6.18)
+│   ├── i18n.js                ← I18N_STRINGS pour fr/en/es/it/pt/de/ar/kab, LANGUAGES
+│   ├── exercises.js           ← BANK (français), + BANK_EXTEND()
+│   ├── exercises-{en,es,it,pt,de,ar}.js ← v6.9/v6.19 : BANK_XX, niveau complet
 │   ├── exercises-kab.js       ← BANK_KAB (kabyle, vocabulaire sourcé uniquement)
-│   ├── storage.js             ← navigateur OU Supabase (RPC patient, auth ortho)
+│   ├── storage.js             ← navigateur OU Supabase + MFA (v6.24, non testé en vrai)
 │   ├── learner.js             ← IA adaptative + analyse d'erreurs + tests
-│   ├── charts.js               ← SVG maison, zéro dépendance
-│   ├── assessment.js           ← bilan initial (partiellement traduit)
-│   ├── app.js                  ← moteur d'exercices principal
-│   ├── conversation.js         ← conversation guidée scriptée (pas d'IA)
-│   ├── memory.js               ← jeu de mémoire (v6.6, sans voix)
-│   ├── phonation.js            ← tenue vocale minutée (v6.6, Web Audio API)
-│   ├── dashboard-ortho.js      ← logique espace ortho
-│   ├── companion.js            ← v6.8 : Ami, compagnon animé (phrases scriptées, pas de LLM)
+│   ├── charts.js              ← SVG maison, zéro dépendance
+│   ├── assessment.js          ← bilan initial, traduit fr/en/es/it/pt/de/ar (v6.17/v6.19)
+│   ├── app.js                 ← moteur d'exercices + structure gratuit/pro (v6.24)
+│   ├── conversation.js        ← conversation guidée, traduite 6 langues (v6.22)
+│   ├── memory.js              ← jeu de mémoire, traduit (v6.16), verrou gratuit/pro (v6.24)
+│   ├── phonation.js           ← tenue vocale, traduit (v6.16), verrou gratuit/pro (v6.24)
+│   ├── dashboard-ortho.js     ← espace ortho + limite patients + MFA (v6.24, non testé)
+│   ├── companion.js           ← Ami, compagnon animé (phrases scriptées, pas de LLM)
 │   └── reminders-edge-function.md
 ├── audio/kab/README.md        ← comment ajouter de vrais enregistrements kabyles
 ├── docs/kabyle-completion-draft.md ← phrases kabyles sourcées, non intégrées
-├── tests/learner.test.js      ← 17 tests, `node tests/learner.test.js`
-└── sql/schema.sql             ← RLS réelle, fonctions RPC, toutes les tables
+├── tests/
+│   ├── learner.test.js            ← 17 tests moteur adaptatif
+│   ├── i18n-completeness.test.js  ← v6.21 : cohérence des 8 langues (voir garde-fous)
+│   ├── pwa-check.test.js          ← v6.23 : cohérence manifest/service worker
+│   ├── ortho-security.test.js     ← v6.24 : mot de passe, limite patients, MFA
+│   └── lang-switch-dashboard.test.js ← v6.25 : contenu dynamique du tableau de bord vs changement de langue
+└── sql/schema.sql             ← RLS réelle, fonctions RPC, colonne `plan` (v6.24)
 ```
 
 ## Comment tester rapidement
@@ -328,7 +490,20 @@ reparole-v6/
 python3 -m http.server 8000
 ```
 Ouvrir Chrome (obligatoire pour les exercices vocaux) sur `localhost:8000`.
-Pour les tests du moteur adaptatif :
+
+**⚠️ Avant toute livraison touchant une langue, un exercice, le bilan,
+ou le mode hors-ligne** :
+```bash
+npm install && npm test
+```
+Doit afficher "17 test(s) réussi(s)" (`learner.test.js`), deux
+"✅ Aucun problème détecté" (i18n, PWA), "13 test(s) réussi(s)" +
+un "✅ Aucun problème détecté" (`ortho-security.test.js`), puis
+"6 test(s) réussi(s)" + un dernier "✅ Aucun problème détecté"
+(`lang-switch-dashboard.test.js`, ajouté en v6.25).
+Sinon, lire le détail affiché avant de livrer quoi que ce soit.
+
+Pour les tests du moteur adaptatif seul :
 ```bash
 node tests/learner.test.js
 ```
