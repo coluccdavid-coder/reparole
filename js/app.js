@@ -272,13 +272,13 @@ async function renderMedia(){
     <div class="media-item">
       <img src="${m.url}" alt="${m.label}">
       <div class="m-label">${m.label}</div>
-      <button class="btn-ghost" style="padding:4px 10px;font-size:.72rem;margin-top:4px" onclick="deleteMedia('${m.id}')">Supprimer</button>
-    </div>`).join('') : `<p class="media-empty">Ajoutez une photo de votre quotidien pour l'utiliser dans un exercice.</p>`;
+      <button class="btn-ghost" style="padding:4px 10px;font-size:.72rem;margin-top:4px" onclick="deleteMedia('${m.id}')">${I18N.t('btn_delete')}</button>
+    </div>`).join('') : `<p class="media-empty">${I18N.t('photos_empty')}</p>`;
 }
 async function uploadMedia(){
   const labelEl=document.getElementById('media-label'), fileEl=document.getElementById('media-file');
   const label=labelEl.value.trim(), file=fileEl.files[0];
-  if(!label || !file){ alert('Choisissez une photo et donnez-lui un nom (le mot à travailler).'); return; }
+  if(!label || !file){ alert(I18N.t('alert_choose_photo')); return; }
   // v5 : redimensionne côté client avant envoi (limite la taille, surtout utile en mode navigateur/localStorage)
   const resized = await resizeImageFile(file, 900).catch(()=>file);
   await Store.addMedia(userCode, label, resized);
@@ -333,7 +333,7 @@ async function startExercise(type){
   // v4 : exercice dynamique construit à partir des photos personnelles du patient
   if(type==='photos_perso'){
     const media = await Store.listMedia(userCode);
-    if(!media.length){ alert("Ajoutez d'abord une photo dans « Vos photos » sur le tableau de bord."); return; }
+    if(!media.length){ alert(I18N.t('alert_add_photo_first')); return; }
     const set = media.map(m=>({word:m.label, url:m.url}));
     current={type,queue:set,index:0,total:set.length,correctInRow:0,wrongInRow:0,sessionCorrect:0,voice:true,fluency:false};
     document.getElementById('ex-title').textContent=I18N.t('ex_photos_t');
