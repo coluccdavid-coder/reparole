@@ -17,6 +17,11 @@ const LEVEL_NAMES = {1:'Doux',2:'Intermédiaire',3:'Avancé'};
 
 let orthoCode = null;   // = l'identifiant Supabase Auth (auth.uid())
 let orthoName = null;
+// v6.24 : structure gratuit/pro pour l'espace orthophoniste — pas de
+// paiement branché (voir sql/schema.sql). Seuil regroupé ici pour être
+// facile à ajuster plus tard.
+let orthoPlan = 'free';
+const ORTHO_FREE_PATIENT_LIMIT = 3;
 let patients = [];
 let currentPatient = null;
 let currentHistory = [];
@@ -39,9 +44,10 @@ const OrthoApp = {
     // v6 : session déjà active (revient sur la page) -> pas besoin de se reconnecter
     const session = await Store.getOrthoSession();
     if(session){
-      orthoCode = session.code; orthoName = session.name;
+      orthoCode = session.code; orthoName = session.name; orthoPlan = session.plan || 'free';
       document.getElementById('ortho-who').textContent = orthoName;
       await OrthoApp.refreshList();
+      await OrthoApp.refreshMfaStatus();
       show('ortho-list');
     }
   },
@@ -62,7 +68,10 @@ const OrthoApp = {
     const password = document.getElementById('o-password').value;
     const errEl = document.getElementById('ortho-auth-error');
     if(!name || !email || !password){ errEl.textContent='Merci de remplir tous les champs.'; return; }
-    if(password.length<8){ errEl.textContent='Le mot de passe doit faire au moins 8 caractères.'; return; }
+    // v6.24 : mot de passe renforcé — 8 caractères minimum ne suffisait
+    // pas pour un compte donnant accès à des données de patients.
+    const pwCheck = OrthoApp._checkPasswordStrength(password);
+    if(pwCheck){ errEl.textContent = pwCheck; return; }
     const res = await Store.signUpOrtho(email, password, name);
     if(res.error){ errEl.textContent = 'Erreur : ' + res.error.message; return; }
     if(res.needsEmailConfirmation){
@@ -74,6 +83,18 @@ const OrthoApp = {
     await OrthoApp._afterLogin(email, password);
   },
 
+  // v6.24 : au moins 8 caractères, une majuscule, une minuscule, un
+  // chiffre. Ce n'est pas exagérément strict (pas de caractère spécial
+  // obligatoire) pour rester accessible, mais nettement plus robuste
+  // qu'une simple longueur minimale.
+  _checkPasswordStrength(password){
+    if(password.length<8) return 'Le mot de passe doit faire au moins 8 caractères.';
+    if(!/[a-z]/.test(password)) return 'Le mot de passe doit contenir au moins une minuscule.';
+    if(!/[A-Z]/.test(password)) return 'Le mot de passe doit contenir au moins une majuscule.';
+    if(!/[0-9]/.test(password)) return 'Le mot de passe doit contenir au moins un chiffre.';
+    return null;
+  },
+
   async signIn(){
     const email = document.getElementById('o-email').value.trim();
     const password = document.getElementById('o-password').value;
@@ -82,27 +103,136 @@ const OrthoApp = {
     errEl.style.color='var(--error)'; errEl.textContent='';
     const res = await Store.signInOrtho(email, password);
     if(res.error){ errEl.textContent = 'Connexion impossible : ' + res.error.message; return; }
-    orthoCode = res.code; orthoName = res.name;
+    await OrthoApp._handleSignInResult(res);
+  },
+
+  // v6.24 : partagé entre signIn() et _afterLogin() — évite de dupliquer
+  // la gestion du défi MFA à deux endroits.
+  async _handleSignInResult(res){
+    if(res.mfaRequired){
+      OrthoApp._pendingMfa = { factorId: res.factorId, challengeId: res.challengeId };
+      document.getElementById('ortho-mfa-error').textContent = '';
+      document.getElementById('mfa-code').value = '';
+      show('ortho-mfa-challenge');
+      return;
+    }
+    orthoCode = res.code; orthoName = res.name; orthoPlan = res.plan || 'free';
     document.getElementById('ortho-who').textContent = orthoName;
     await OrthoApp.refreshList();
+    await OrthoApp.refreshMfaStatus();
     show('ortho-list');
+  },
+
+  // v6.24 : appelé depuis l'écran "Code de sécurité" après une connexion
+  // par mot de passe sur un compte protégé par la double authentification.
+  async submitMfaCode(){
+    const code = document.getElementById('mfa-code').value.trim();
+    const errEl = document.getElementById('ortho-mfa-error');
+    if(!/^\d{6}$/.test(code)){ errEl.textContent = 'Entrez les 6 chiffres du code.'; return; }
+    const pending = OrthoApp._pendingMfa;
+    if(!pending){ errEl.textContent = 'Session expirée, reconnectez-vous.'; show('ortho-login'); return; }
+    const res = await Store.completeMfaSignIn(pending.factorId, pending.challengeId, code);
+    if(res.error){ errEl.textContent = 'Code invalide ou expiré. Réessayez.'; return; }
+    OrthoApp._pendingMfa = null;
+    orthoCode = res.code; orthoName = res.name; orthoPlan = res.plan || 'free';
+    document.getElementById('ortho-who').textContent = orthoName;
+    await OrthoApp.refreshList();
+    await OrthoApp.refreshMfaStatus();
+    show('ortho-list');
+  },
+
+  cancelMfaChallenge(){
+    OrthoApp._pendingMfa = null;
+    show('ortho-login');
   },
 
   async _afterLogin(email, password){
     const res = await Store.signInOrtho(email, password);
     if(res.error) return;
-    orthoCode = res.code; orthoName = res.name;
-    document.getElementById('ortho-who').textContent = orthoName;
-    await OrthoApp.refreshList();
-    show('ortho-list');
+    await OrthoApp._handleSignInResult(res);
   },
 
-  async logout(){ await Store.signOutOrtho(); orthoCode=null; orthoName=null; patients=[]; show('ortho-login'); },
+  async logout(){ await Store.signOutOrtho(); orthoCode=null; orthoName=null; orthoPlan='free'; patients=[]; show('ortho-login'); },
+
+  // =====================================================================
+  //  v6.24 — GESTION DE LA DOUBLE AUTHENTIFICATION (depuis le tableau de bord)
+  // =====================================================================
+
+  // Met à jour la carte "Sécurité du compte" selon l'état réel du compte
+  // (interroge Supabase à chaque fois plutôt que de supposer un état).
+  async refreshMfaStatus(){
+    const res = await Store.mfaListFactors();
+    const statusEl = document.getElementById('mfa-status');
+    const step1 = document.getElementById('mfa-enroll-step1');
+    const step2 = document.getElementById('mfa-enroll-step2');
+    const disableBtn = document.getElementById('mfa-disable-btn');
+    if(!statusEl) return; // écran pas encore affiché
+    if(res.error){ statusEl.textContent = 'Impossible de vérifier (hors-ligne ?)'; return; }
+    const verified = (res.data.totp || []).filter(f => f.status==='verified');
+    if(verified.length){
+      statusEl.textContent = 'Activée ✅';
+      step1.style.display = 'none';
+      step2.style.display = 'none';
+      disableBtn.style.display = '';
+    } else {
+      statusEl.textContent = 'Non activée';
+      step1.style.display = '';
+      step2.style.display = 'none';
+      disableBtn.style.display = 'none';
+    }
+  },
+
+  async startMfaEnroll(){
+    const msg = document.getElementById('mfa-enroll-msg');
+    msg.textContent = '';
+    const res = await Store.mfaEnroll();
+    if(res.error){ msg.textContent = 'Erreur : ' + res.error.message; return; }
+    OrthoApp._enrollFactorId = res.data.id;
+    document.getElementById('mfa-qr').innerHTML = res.data.totp.qr_code;
+    document.getElementById('mfa-secret').textContent = res.data.totp.secret;
+    document.getElementById('mfa-enroll-step1').style.display = 'none';
+    document.getElementById('mfa-enroll-step2').style.display = '';
+  },
+
+  async confirmMfaEnroll(){
+    const code = document.getElementById('mfa-confirm-code').value.trim();
+    const msg = document.getElementById('mfa-enroll-msg');
+    if(!/^\d{6}$/.test(code)){ msg.textContent = 'Entrez les 6 chiffres du code affiché par votre application.'; return; }
+    const factorId = OrthoApp._enrollFactorId;
+    if(!factorId){ msg.textContent = 'Recommencez depuis le début.'; return; }
+    const chRes = await Store.mfaChallenge(factorId);
+    if(chRes.error){ msg.textContent = 'Erreur : ' + chRes.error.message; return; }
+    const vRes = await Store.mfaVerify(factorId, chRes.data.id, code);
+    if(vRes.error){ msg.textContent = 'Code invalide, réessayez.'; return; }
+    msg.textContent = '✅ Double authentification activée.';
+    document.getElementById('mfa-confirm-code').value = '';
+    await OrthoApp.refreshMfaStatus();
+  },
+
+  async disableMfa(){
+    const msg = document.getElementById('mfa-enroll-msg');
+    if(!confirm('Désactiver la double authentification ? Votre compte sera protégé uniquement par le mot de passe.')) return;
+    const res = await Store.mfaListFactors();
+    if(res.error){ msg.textContent = 'Erreur : ' + res.error.message; return; }
+    for(const f of (res.data.totp || [])){
+      await Store.mfaUnenroll(f.id);
+    }
+    msg.textContent = 'Double authentification désactivée.';
+    await OrthoApp.refreshMfaStatus();
+  },
 
   async assign(){
     const code = document.getElementById('assign-code').value.trim();
     const msg = document.getElementById('assign-msg');
     if(!code){ return; }
+    // v6.24 : structure gratuit/pro — limite le nombre de patients
+    // suivis simultanément en compte gratuit. Pas de paiement branché :
+    // le passage en 'pro' se fait à la main dans Supabase pour l'instant
+    // (voir sql/schema.sql).
+    if(orthoPlan!=='pro' && patients.length>=ORTHO_FREE_PATIENT_LIMIT){
+      msg.textContent = `Limite du compte gratuit atteinte (${ORTHO_FREE_PATIENT_LIMIT} patients). Passez au compte Pro pour suivre plus de patients.`;
+      return;
+    }
     const res = await Store.assignPatient(orthoCode, code);
     if(res.error){ msg.textContent = res.error.message; return; }
     msg.textContent = `Patient rattaché ✅ (${res.name})`;

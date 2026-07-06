@@ -43,6 +43,11 @@ const Prefs = {
     const insightNote = document.getElementById('insight-partial-note');
     if(insightNote) insightNote.style.display = this.data.lang==='kab' ? '' : 'none';
     if(window.I18N) I18N.apply(this.data.lang);
+    // v6.25 : rafraîchit le contenu dynamique (non couvert par data-i18n)
+    // que app.js aurait déjà généré dans l'ancienne langue avant ce
+    // changement — voir le commentaire détaillé sur onLangChange() dans
+    // js/app.js. Optionnel : ce fichier ne doit pas dépendre de app.js.
+    if(typeof window.onLangChange === 'function') window.onLangChange();
   },
 
   // v6.1 : génère les boutons de langue à partir de js/i18n.js (LANGUAGES),

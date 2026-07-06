@@ -24,7 +24,13 @@ create table if not exists patients (
   reminder_opt_in boolean default false,    -- v5 : le patient souhaite des rappels
   reminder_email   text,                    -- v5 : email pour les rappels (facultatif)
   last_seen   timestamptz default now(),
-  created_at  timestamptz default now()
+  created_at  timestamptz default now(),
+  -- v6.24 : structure gratuit/pro — pas de paiement branché pour
+  -- l'instant (décision explicite : structure prête, activation
+  -- manuelle en attendant un vrai système de paiement). Pour passer un
+  -- patient en 'pro' à la main : Supabase > Table Editor > patients >
+  -- modifier la colonne plan sur la ligne concernée.
+  plan        text not null default 'free' check (plan in ('free','pro'))
 );
 
 -- ---------------------------------------------------------------------
@@ -59,7 +65,10 @@ create table if not exists orthophonists (
   code        text primary key,            -- = auth.users.id (uuid, en texte)
   name        text not null,
   email       text,
-  created_at  timestamptz default now()
+  created_at  timestamptz default now(),
+  -- v6.24 : même logique gratuit/pro que patients — limite le nombre
+  -- de patients suivis en gratuit (voir js/dashboard-ortho.js).
+  plan        text not null default 'free' check (plan in ('free','pro'))
 );
 
 -- Rattachement patient <-> orthophoniste (un patient peut être suivi
@@ -326,3 +335,19 @@ $$;
 --  ce projet ne peut pas fournir. Voir js/reminders-edge-function.md
 --  pour une Supabase Edge Function + tâche planifiée (cron) prête à adapter.
 -- =====================================================================
+
+-- =====================================================================
+--  v6.24 — GRATUIT / PRO (structure seulement, pas de paiement branché)
+--  Ces deux lignes garantissent que la colonne `plan` existe même si
+--  vous recollez ce script sur une base où `patients`/`orthophonists`
+--  existaient déjà avant cette version (le `create table if not
+--  exists` plus haut ne les aurait pas ajoutées dans ce cas précis).
+-- =====================================================================
+alter table patients      add column if not exists plan text not null default 'free' check (plan in ('free','pro'));
+alter table orthophonists add column if not exists plan text not null default 'free' check (plan in ('free','pro'));
+
+-- Pour passer un compte en 'pro' à la main (en attendant un vrai système
+-- de paiement) : Supabase > Table Editor > patients (ou orthophonists)
+-- > cliquer la ligne > champ "plan" > "pro" > Save. Ou en SQL :
+--   update patients      set plan='pro' where code='p-xxxxxxxx';
+--   update orthophonists set plan='pro' where email='vous@cabinet.fr';

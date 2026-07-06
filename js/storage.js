@@ -22,9 +22,17 @@
 // =====================================================================
 
 // 👉 POUR ACTIVER LE CLOUD : colle ici les 2 valeurs de ton projet Supabase
-//    (Project Settings > API).
-const SUPABASE_URL = "";      // ex : "https://xxxx.supabase.co"
-const SUPABASE_ANON_KEY = ""; // la clé "anon public"
+//    (Project Settings > API Keys).
+// v6.25 : Supabase est passé au nouveau système de clés (publishable /
+// secret) qui remplace l'ancien anon / service_role — voir le README
+// pour le détail. `createClient()` accepte directement une clé
+// "publishable" (sb_publishable_...) exactement comme l'ancienne clé
+// "anon" (aucun autre changement de code nécessaire). Ne JAMAIS mettre
+// une clé "secret" (sb_secret_...) ici : elle donne un accès privilégié
+// qui contourne les policies RLS, elle n'a rien à faire dans du code
+// qui tourne dans le navigateur du patient.
+const SUPABASE_URL = "https://bwxlshedzpfaeszwktdx.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_R51W8SSPvCcF5MKPXEMWTQ_F_58P3BS";
 
 const CLOUD_ENABLED = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 let supa = null;
@@ -110,8 +118,31 @@ const ReParoleStore = {
     await initCloud();
     const { data, error } = await supa.auth.signInWithPassword({ email, password });
     if(error) return { error };
+    // v6.24 : double authentification (TOTP) — si le compte en a une
+    // activée, on ne termine pas la connexion tout de suite : on renvoie
+    // un défi à relever (code à 6 chiffres) plutôt que le profil complet.
+    const { data: aal } = await supa.auth.mfa.getAuthenticatorAssuranceLevel();
+    if(aal && aal.nextLevel==='aal2' && aal.currentLevel!==aal.nextLevel){
+      const { data: factors } = await supa.auth.mfa.listFactors();
+      const totp = factors && factors.totp && factors.totp[0];
+      if(totp){
+        const { data: challenge, error: chErr } = await supa.auth.mfa.challenge({ factorId: totp.id });
+        if(chErr) return { error: chErr };
+        return { mfaRequired:true, factorId: totp.id, challengeId: challenge.id };
+      }
+    }
     const row = await this._ensureOrthoRow(data.session.user);
-    return { code: data.session.user.id, name: row.name };
+    return { code: data.session.user.id, name: row.name, plan: row.plan || 'free' };
+  },
+  // v6.24 : termine la connexion après vérification du code à 6 chiffres.
+  async completeMfaSignIn(factorId, challengeId, code){
+    if(!CLOUD_ENABLED) return { error:new Error('Le mode cloud n\'est pas configuré.') };
+    await initCloud();
+    const { error } = await supa.auth.mfa.verify({ factorId, challengeId, code });
+    if(error) return { error };
+    const { data:{ session } } = await supa.auth.getSession();
+    const row = await this._ensureOrthoRow(session.user);
+    return { code: session.user.id, name: row.name, plan: row.plan || 'free' };
   },
   async signOutOrtho(){ if(!CLOUD_ENABLED) return; await initCloud(); await supa.auth.signOut(); },
   async getOrthoSession(){
@@ -120,7 +151,39 @@ const ReParoleStore = {
     const { data: { session } } = await supa.auth.getSession();
     if(!session) return null;
     const row = await this._ensureOrthoRow(session.user);
-    return { code: session.user.id, name: row.name };
+    return { code: session.user.id, name: row.name, plan: row.plan || 'free' };
+  },
+
+  // =====================================================================
+  //  v6.24 — DOUBLE AUTHENTIFICATION (TOTP, via Supabase Auth MFA natif)
+  //  ---------------------------------------------------------------------
+  //  Aucune infrastructure maison : on utilise directement l'API MFA
+  //  intégrée à Supabase (supabase.auth.mfa.*), la même que pour la
+  //  connexion. Fonctionne avec n'importe quelle app d'authentification
+  //  standard (Google Authenticator, Authy, 1Password, etc.) puisque
+  //  TOTP est un standard ouvert, pas quelque chose de propriétaire.
+  // =====================================================================
+  async mfaEnroll(){
+    if(!CLOUD_ENABLED) return { error:new Error('Le mode cloud n\'est pas configuré.') };
+    await initCloud();
+    return await supa.auth.mfa.enroll({ factorType:'totp' });
+  },
+  async mfaChallenge(factorId){
+    await initCloud();
+    return await supa.auth.mfa.challenge({ factorId });
+  },
+  async mfaVerify(factorId, challengeId, code){
+    await initCloud();
+    return await supa.auth.mfa.verify({ factorId, challengeId, code });
+  },
+  async mfaListFactors(){
+    if(!CLOUD_ENABLED) return { data:{ totp:[] } };
+    await initCloud();
+    return await supa.auth.mfa.listFactors();
+  },
+  async mfaUnenroll(factorId){
+    await initCloud();
+    return await supa.auth.mfa.unenroll({ factorId });
   },
   // Crée la ligne `orthophonists` si elle n'existe pas encore (1ère connexion
   // après confirmation d'email). Idempotent.

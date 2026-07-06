@@ -24,6 +24,15 @@ const Phonation = {
   _stream:null, _ctx:null, _raf:null, _running:false, _startedAt:null, _lastAboveAt:null,
 
   intro(){
+    // v6.24 : même logique que le jeu de mémoire — gratuit quel que
+    // soit le type, mais respecte la langue et le quota journalier.
+    // Ne vérifie qu'une fois par visite de l'écran d'intro, pas à
+    // chaque relance (voir Phonation.start() plus bas, pas concerné).
+    if(typeof lockReason==='function'){
+      const reason = lockReason('phonation');
+      if(reason && reason!=='type'){ showUpsell(reason); return; }
+      if(typeof recordDailySession==='function') recordDailySession();
+    }
     document.getElementById('phonation-body').innerHTML = `
       <div class="prompt-card" style="text-align:left">
         <div class="prompt-emoji" style="text-align:center">🫁</div>

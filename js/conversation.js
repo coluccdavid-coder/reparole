@@ -378,6 +378,13 @@ const Conversation = {
   },
 
   start(key){
+    // v6.24 : la conversation guidée fait partie des fonctionnalités
+    // réservées au compte pro (comme les exercices vocaux avancés).
+    if(typeof lockReason==='function'){
+      const reason = lockReason('conversation');
+      if(reason){ showUpsell(reason); return; }
+      if(typeof recordDailySession==='function') recordDailySession();
+    }
     const scenario = convScenarios()[key];
     this.state = { key, scenario, index:0, ok:0, total:scenario.steps.length, given:null };
     this._renderStep();

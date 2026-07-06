@@ -17,6 +17,15 @@ const Memory = {
   _el(){ return document.getElementById('memory-body'); },
 
   start(){
+    // v6.24 : le jeu de mémoire reste gratuit quel que soit le type,
+    // mais respecte quand même la langue et le quota journalier —
+    // sinon un compte gratuit pourrait le jouer sans limite pendant que
+    // les autres exercices sont bloqués, ce qui serait incohérent.
+    if(typeof lockReason==='function'){
+      const reason = lockReason('memory');
+      if(reason && reason!=='type'){ showUpsell(reason); return; }
+      if(typeof recordDailySession==='function') recordDailySession();
+    }
     const lengthByLevel = { 1:3, 2:4, 3:5 };
     this.state = {
       round:0, totalRounds:5,

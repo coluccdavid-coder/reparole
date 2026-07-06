@@ -10,6 +10,69 @@ let user = null;        // dossier du patient connecté
 let userCode = null;    // son code de suivi
 let current = null;     // exercice en cours
 
+// =====================================================================
+//  v6.24 — STRUCTURE GRATUIT / PRO (pas de paiement branché)
+//  ---------------------------------------------------------------------
+//  Décision explicite de l'utilisateur : la structure doit exister et
+//  fonctionner, mais aucun système de paiement n'est activé pour
+//  l'instant. Le passage en 'pro' se fait à la main dans Supabase (voir
+//  sql/schema.sql) en attendant un vrai système de facturation.
+//
+//  Ces 3 constantes sont volontairement regroupées ici pour être
+//  faciles à ajuster plus tard sans devoir chercher dans tout le code :
+// =====================================================================
+const FREE_DAILY_SESSION_LIMIT = 5;   // séances/jour, tous exercices confondus
+const FREE_LANGS = ['fr'];            // langues accessibles sans compte pro
+const PRO_ONLY_TYPES = ['repetition','denomination_orale','fluence','intonation','conversation']; // exercices vocaux avancés + conversation guidée
+
+function isPro(){ return !!(user && user.plan==='pro'); }
+
+function dailySessionsUsedToday(){
+  if(!user) return 0;
+  const today = new Date().toISOString().slice(0,10);
+  return (user.dailySessionsDate===today) ? (user.dailySessionsCount||0) : 0;
+}
+
+function recordDailySession(){
+  if(!user) return;
+  const today = new Date().toISOString().slice(0,10);
+  if(user.dailySessionsDate !== today){ user.dailySessionsDate = today; user.dailySessionsCount = 0; }
+  user.dailySessionsCount = (user.dailySessionsCount||0) + 1;
+}
+
+// Renvoie null si l'exercice est accessible, ou la raison du verrou sinon.
+function lockReason(type){
+  if(isPro()) return null;
+  const lang = (window.Prefs && Prefs.data.lang) || 'fr';
+  if(!FREE_LANGS.includes(lang)) return 'lang';
+  if(PRO_ONLY_TYPES.includes(type)) return 'type';
+  if(dailySessionsUsedToday() >= FREE_DAILY_SESSION_LIMIT) return 'quota';
+  return null;
+}
+
+function showUpsell(reason){
+  const messages = {
+    lang:  I18N.t('upsell_lang'),
+    type:  I18N.t('upsell_type'),
+    quota: I18N.t('upsell_quota')
+  };
+  // v6.24 : on ne touche qu'à #ex-body (comme le fait déjà
+  // renderQuestion()/finishExercise() normalement) — surtout PAS toute
+  // la .wrap, qui contient les conteneurs stables (ex-header, barre de
+  // progression, Ami) réutilisés par le prochain exercice.
+  document.getElementById('ex-title').textContent = I18N.t('upsell_title');
+  document.getElementById('ex-count').textContent = '';
+  document.getElementById('ex-progress').style.width = '0%';
+  document.getElementById('ex-feedback').textContent = '';
+  document.getElementById('ex-body').innerHTML = `
+    <div class="prompt-card" style="text-align:center">
+      <div class="prompt-emoji">🔒</div>
+      <p style="color:var(--ink-soft);margin-top:10px">${messages[reason]}</p>
+      <button class="btn-ghost" style="margin-top:18px;width:100%" onclick="goDashboard()">${I18N.t('back_to_home')}</button>
+    </div>`;
+  show('exercise');
+}
+
 /* ---------- Synthèse vocale : lire les consignes à voix haute ---------- */
 function speak(text){
   if(!('speechSynthesis' in window)) return;
@@ -69,7 +132,10 @@ async function createNewPatient(){
   const name = document.getElementById('name').value.trim() || 'Marie';
   userCode = Store.generateCode();
   justCreatedCode = userCode;
-  user = { name, level:2, sessions:0, correct:0, total:0, streak:1 };
+  // v6.24 : structure gratuit/pro — pas de paiement branché, activation
+  // manuelle pour l'instant (voir sql/schema.sql). Tout nouveau dossier
+  // démarre en 'free'.
+  user = { name, level:2, sessions:0, correct:0, total:0, streak:1, plan:'free' };
   show('assessment');
   Assessment.start(async ({ seed, level })=>{
     user.level = level;
@@ -259,6 +325,11 @@ function isCloseEnough(said,target){ const s=normalize(said),t=normalize(target)
 
 /* ---------- Moteur d'exercice ---------- */
 async function startExercise(type){
+  // v6.24 : structure gratuit/pro — vérifié avant toute autre logique
+  const reason = lockReason(type);
+  if(reason){ showUpsell(reason); return; }
+  recordDailySession();
+
   // v4 : exercice dynamique construit à partir des photos personnelles du patient
   if(type==='photos_perso'){
     const media = await Store.listMedia(userCode);
@@ -517,5 +588,20 @@ async function finishExercise(){
   document.getElementById('ai-message').textContent= pct>=70?I18N.t('session_good_msg'):I18N.t('session_soft_msg');
 }
 
+// v6.25 : bug remonté par capture d'écran — en changeant de langue
+// (arabe -> français) DEPUIS le tableau de bord, seuls les libellés
+// statiques (marqués data-i18n, ex. "Niveau adapté :", "Se déconnecter")
+// repassaient en français via I18N.apply(). Tout ce que renderDashboard()
+// écrit directement en JS (l'accueil "Bonjour Marie", le nom du niveau,
+// le message d'Ami, l'encadré "Votre assistant a appris") avait été
+// calculé une seule fois, à l'affichage précédent du tableau de bord —
+// donc figé dans l'ancienne langue tant que renderDashboard() n'était
+// pas rappelée (ex. déconnexion/reconnexion). Prefs.apply() ne connaît
+// pas app.js (bonne séparation), donc plutôt que de l'y coupler
+// directement, on expose ce hook optionnel qu'il appelle s'il existe.
+function onLangChange(){
+  if(user && document.getElementById('dashboard')?.classList.contains('active')) renderDashboard();
+}
+
 // Exposer les fonctions appelées depuis le HTML
-Object.assign(window, {login,createNewPatient,dismissCodeBanner,logout,goDashboard,startExercise,checkChoice,answer_feedback,toggleListen,toggleFluency,finishFluencyItem,speak,uploadMedia,deleteMedia,toggleReminder,saveReminderEmail,playKabWordUI});
+Object.assign(window, {login,createNewPatient,dismissCodeBanner,logout,goDashboard,startExercise,checkChoice,answer_feedback,toggleListen,toggleFluency,finishFluencyItem,speak,uploadMedia,deleteMedia,toggleReminder,saveReminderEmail,playKabWordUI,onLangChange});

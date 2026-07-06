@@ -222,7 +222,15 @@ const I18N_STRINGS = {
     conv_your_turn:'À vous de répondre — à voix haute ou en choisissant ci-dessous :',
     conv_finished:'Conversation terminée',
     conv_result:(ok,total)=>`${ok} échange(s) réussi(s) sur ${total}.`,
-    conv_try_another:'Essayer une autre situation'
+    conv_try_another:'Essayer une autre situation',
+
+    // v6.24 — structure gratuit/pro (pas de paiement branché, voir
+    // sql/schema.sql). Ton neutre et factuel, jamais culpabilisant —
+    // même esprit que le reste des messages de l'app.
+    upsell_title:'Fonctionnalité Pro',
+    upsell_lang:"Cette langue fait partie de la version Pro. Le français reste entièrement gratuit.",
+    upsell_type:"Cet exercice fait partie de la version Pro.",
+    upsell_quota:"Vous avez atteint votre nombre de séances gratuites pour aujourd'hui. Revenez demain, ou passez à la version Pro pour un usage illimité."
   },
   en: {
     app_name:'ReParole',
@@ -350,7 +358,12 @@ const I18N_STRINGS = {
     conv_your_turn:'Your turn to answer — out loud or by choosing below:',
     conv_finished:'Conversation complete',
     conv_result:(ok,total)=>`${ok} successful exchange(s) out of ${total}.`,
-    conv_try_another:'Try another scenario'
+    conv_try_another:'Try another scenario',
+
+    upsell_title:'Pro feature',
+    upsell_lang:'This language is part of the Pro version. French remains entirely free.',
+    upsell_type:'This exercise is part of the Pro version.',
+    upsell_quota:"You've reached your free sessions for today. Come back tomorrow, or upgrade to Pro for unlimited use."
   },
   es: {
     app_name:'ReParole',
@@ -478,7 +491,12 @@ const I18N_STRINGS = {
     conv_your_turn:'Te toca responder — en voz alta o eligiendo abajo:',
     conv_finished:'Conversación terminada',
     conv_result:(ok,total)=>`${ok} intercambio(s) logrado(s) de ${total}.`,
-    conv_try_another:'Probar otra situación'
+    conv_try_another:'Probar otra situación',
+
+    upsell_title:'Función Pro',
+    upsell_lang:'Este idioma forma parte de la versión Pro. El francés sigue siendo totalmente gratuito.',
+    upsell_type:'Este ejercicio forma parte de la versión Pro.',
+    upsell_quota:'Has alcanzado tu número de sesiones gratuitas de hoy. Vuelve mañana, o pasa a la versión Pro para un uso ilimitado.'
   },
   it: {
     app_name:'ReParole',
@@ -606,7 +624,12 @@ const I18N_STRINGS = {
     conv_your_turn:'Tocca a te rispondere — ad alta voce o scegliendo qui sotto:',
     conv_finished:'Conversazione terminata',
     conv_result:(ok,total)=>`${ok} scambio/i riuscito/i su ${total}.`,
-    conv_try_another:"Prova un'altra situazione"
+    conv_try_another:"Prova un'altra situazione",
+
+    upsell_title:'Funzione Pro',
+    upsell_lang:'Questa lingua fa parte della versione Pro. Il francese resta interamente gratuito.',
+    upsell_type:'Questo esercizio fa parte della versione Pro.',
+    upsell_quota:'Hai raggiunto il numero di sedute gratuite per oggi. Torna domani, oppure passa alla versione Pro per un uso illimitato.'
   },
   pt: {
     app_name:'ReParole',
@@ -734,7 +757,12 @@ const I18N_STRINGS = {
     conv_your_turn:'É a sua vez de responder — em voz alta ou escolhendo abaixo:',
     conv_finished:'Conversa terminada',
     conv_result:(ok,total)=>`${ok} troca(s) bem-sucedida(s) em ${total}.`,
-    conv_try_another:'Experimentar outra situação'
+    conv_try_another:'Experimentar outra situação',
+
+    upsell_title:'Funcionalidade Pro',
+    upsell_lang:'Este idioma faz parte da versão Pro. O francês continua totalmente gratuito.',
+    upsell_type:'Este exercício faz parte da versão Pro.',
+    upsell_quota:'Atingiu o seu número de sessões gratuitas de hoje. Volte amanhã, ou passe à versão Pro para uso ilimitado.'
   },
   de: {
     app_name:'ReParole',
@@ -862,7 +890,12 @@ const I18N_STRINGS = {
     conv_your_turn:'Sie sind dran zu antworten — laut oder durch Auswahl unten:',
     conv_finished:'Gespräch beendet',
     conv_result:(ok,total)=>`${ok} erfolgreiche(r) Austausch/e von ${total}.`,
-    conv_try_another:'Eine andere Situation ausprobieren'
+    conv_try_another:'Eine andere Situation ausprobieren',
+
+    upsell_title:'Pro-Funktion',
+    upsell_lang:'Diese Sprache ist Teil der Pro-Version. Französisch bleibt vollständig kostenlos.',
+    upsell_type:'Diese Übung ist Teil der Pro-Version.',
+    upsell_quota:'Sie haben Ihre kostenlosen Sitzungen für heute aufgebraucht. Kommen Sie morgen wieder, oder wechseln Sie zur Pro-Version für unbegrenzte Nutzung.'
   },
   ar: {
     app_name:'ReParole',
@@ -990,7 +1023,12 @@ const I18N_STRINGS = {
     conv_your_turn:'دورك للإجابة — بصوت عالٍ أو باختيار مما يلي:',
     conv_finished:'انتهت المحادثة',
     conv_result:(ok,total)=>`${ok} تبادل/تبادلات ناجحة من أصل ${total}.`,
-    conv_try_another:'تجربة موقف آخر'
+    conv_try_another:'تجربة موقف آخر',
+
+    upsell_title:'ميزة النسخة الاحترافية',
+    upsell_lang:'هذه اللغة جزء من النسخة الاحترافية. تبقى الفرنسية مجانية بالكامل.',
+    upsell_type:'هذا التمرين جزء من النسخة الاحترافية.',
+    upsell_quota:'لقد بلغت عدد جلساتك المجانية لهذا اليوم. عد غدًا، أو انتقل إلى النسخة الاحترافية للاستخدام غير المحدود.'
   },
   kab: {
     app_name:'ReParole',
