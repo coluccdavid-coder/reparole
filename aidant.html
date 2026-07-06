@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReParole — Espace aidant</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2f6f5e">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/ortho.css">
+<link rel="stylesheet" href="css/companion.css">
+</head>
+<body>
+<!--
+  v6.28 — PARCOURS AIDANT (nouveau). Espace en LECTURE SEULE pour un
+  proche (famille/aidant), pensé comme un troisième parcours à côté de
+  celui du patient et de celui de l'orthophoniste :
+   - Un aidant entre le code de suivi que le patient lui a partagé (même
+     code que celui utilisé côté patient/rapport ortho — pas de nouveau
+     système de comptes, cohérent avec le choix déjà fait pour
+     report.html/patient-report.html).
+   - Aucune écriture : jamais d'exercice, jamais de modification du
+     dossier. Juste les mêmes statistiques que le patient voit sur son
+     propre tableau de bord (séances, réussite, niveau, tendance), plus
+     des conseils génériques de communication (non cliniques — cf.
+     garde-fou n°8 : jamais d'avis médical).
+   - Multilingue comme le reste de l'app (Prefs + i18n), contrairement à
+     report.html qui reste réservé à l'orthophoniste en français.
+   - Ami accueille l'aidant avec un registre différent de celui du
+     patient ("aidant_welcome" dans js/companion.js, pas "welcome").
+-->
+<div id="access" class="screen active">
+  <div class="wrap">
+    <div class="login-card">
+      <div class="brand" style="justify-content:center;font-size:1.7rem"><span class="dot"></span>ReParole</div>
+      <div class="lang-switch" data-lang-switcher style="display:flex;justify-content:center;gap:8px;margin-bottom:14px"></div>
+      <h1 data-i18n="aidant_title">Espace aidant</h1>
+      <p class="sub" data-i18n="aidant_intro">Suivez les progrès de votre proche et découvrez comment l'accompagner au quotidien.</p>
+      <div class="field"><label for="aidant-code" data-i18n="aidant_code_label">Code de suivi du patient</label><input id="aidant-code" type="password" data-i18n-placeholder="aidant_code_ph" placeholder="Le code partagé par votre proche"></div>
+      <button class="btn-primary" data-i18n="aidant_view_btn" onclick="AidantApp.view()">Voir sa progression</button>
+      <p class="hint" id="aidant-error" style="color:var(--error)"></p>
+      <p class="hint" style="margin-top:16px"><a href="index.html" data-i18n="aidant_back_login" style="color:var(--accent)">← Retour à l'accueil</a></p>
+    </div>
+  </div>
+</div>
+
+<div id="view" class="screen">
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>ReParole</div>
+    <div class="who"><button class="btn-ghost" data-i18n="aidant_back_btn" onclick="AidantApp.reset()">← Voir un autre code</button></div>
+  </div>
+  <div class="wrap">
+    <div class="companion-widget" id="companion-aidant"></div>
+    <div class="card">
+      <h3 data-i18n="aidant_progress_title">Sa progression</h3>
+      <div class="stats">
+        <div class="stat"><div class="num" id="a-sessions">0</div><div class="lab" data-i18n="stat_sessions">séances</div></div>
+        <div class="stat"><div class="num" id="a-success">—</div><div class="lab" data-i18n="stat_success">réussite</div></div>
+        <div class="stat"><div class="num" id="a-level">—</div><div class="lab" data-i18n="patient_report_level_label">Niveau</div></div>
+      </div>
+      <div id="a-chart" style="margin-top:18px"></div>
+      <p id="a-trend" style="color:var(--ink-soft);font-size:.85rem;margin-top:8px" aria-live="polite"></p>
+    </div>
+    <div class="card">
+      <h3 data-i18n="aidant_tips_title">Comment l'aider au quotidien</h3>
+      <ul id="a-tips" style="padding-left:20px;line-height:1.7"></ul>
+    </div>
+    <p class="disclaimer" data-i18n="aidant_disclaimer">Cet espace vous aide à mieux accompagner votre proche au quotidien. Il ne remplace pas les conseils personnalisés de l'orthophoniste.</p>
+    <div class="access-bar" data-lang-switcher></div>
+  </div>
+</div>
+
+<script src="js/prefs.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/learner.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/companion.js"></script>
+<script>
+const Store = window.ReParoleStore;
+const AI = window.Learner;
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+const AidantApp = {
+  code: null,
+
+  async view(){
+    const input = document.getElementById('aidant-code');
+    const code = (input.value||'').trim();
+    const errEl = document.getElementById('aidant-error');
+    errEl.textContent = '';
+    if(!code){ errEl.textContent = I18N.t('aidant_error_missing'); return; }
+
+    const patient = await Store.loadPatient(code);
+    if(!patient){ errEl.textContent = I18N.t('aidant_error_not_found'); return; }
+
+    this.code = code;
+    await this.render();
+    show('view');
+  },
+
+  reset(){
+    this.code = null;
+    document.getElementById('aidant-code').value = '';
+    document.getElementById('aidant-error').textContent = '';
+    show('access');
+  },
+
+  async render(){
+    if(!this.code) return;
+    const patient = await Store.loadPatient(this.code);
+    if(!patient) return; // dossier supprimé entre-temps : on reste discret, pas de plantage
+
+    Companion.mount('companion-aidant');
+    Companion.say('aidant_welcome');
+
+    document.getElementById('a-sessions').textContent = patient.sessions;
+    document.getElementById('a-success').textContent = patient.total ? Math.round(100*patient.correct/patient.total)+'%' : '—';
+    document.getElementById('a-level').textContent = I18N.t('level_'+([1,2,3].includes(patient.level)?patient.level:2));
+
+    const hist = await Store.history(this.code);
+    const chartEl = document.getElementById('a-chart');
+    if(chartEl && typeof Charts !== 'undefined') chartEl.innerHTML = Charts.successLine(hist);
+
+    const trend = AI.trend(hist);
+    const trendEl = document.getElementById('a-trend');
+    if(trendEl){
+      trendEl.textContent = !hist.length ? I18N.t('patient_report_no_sessions')
+        : trend.direction==='hausse' ? I18N.t('trend_up', trend.deltaPct)
+        : trend.direction==='baisse' ? I18N.t('trend_down', trend.deltaPct)
+        : trend.direction==='stable' ? I18N.t('trend_stable')
+        : I18N.t('ortho_no_trend_data');
+    }
+
+    const tipsEl = document.getElementById('a-tips');
+    if(tipsEl){
+      tipsEl.innerHTML = I18N.list('aidant_tips').map(tip=>`<li>${tip}</li>`).join('');
+    }
+  }
+};
+
+// Même mécanisme que index.html/patient-report.html : si la langue
+// change, on re-rend tout ce qui n'est pas juste data-i18n (mêmes
+// garde-fous que le bug v6.25 déjà documenté ailleurs).
+window.onLangChange = function(){
+  if(document.getElementById('view').classList.contains('active')) AidantApp.render();
+};
+
+Prefs.load();
+window.AidantApp = AidantApp;
+</script>
+</body>
+</html>
