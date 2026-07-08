@@ -209,29 +209,46 @@ alter table notes                enable row level security;
 -- Par défaut, avec RLS activé et AUCUNE policy, personne (à part le
 -- rôle "service_role", réservé au backend) ne peut rien lire ni écrire.
 -- On rouvre seulement ce qui est nécessaire, et rien de plus :
+--
+-- v6.44 : contrairement à `create table if not exists` et
+-- `create or replace function`, PostgreSQL n'a PAS d'équivalent
+-- "if not exists" pour `create policy` — relancer ce script sur une
+-- base où il a déjà tourné (même partiellement) provoque une erreur
+-- "policy already exists" et interrompt tout le reste du script.
+-- Chaque `create policy` est donc précédé d'un `drop policy if exists`
+-- correspondant, pour que ce fichier reste rejouable à l'identique,
+-- comme documenté plus haut ("vous pouvez le recoller tel quel").
 
 -- --- Orthophonistes : chacun voit/modifie uniquement sa propre ligne ---
+drop policy if exists "ortho lit son propre compte" on orthophonists;
 create policy "ortho lit son propre compte" on orthophonists for select
   using (code = auth.uid()::text);
+drop policy if exists "ortho met à jour son propre compte" on orthophonists;
 create policy "ortho met à jour son propre compte" on orthophonists for update
   using (code = auth.uid()::text);
+drop policy if exists "ortho crée son propre compte" on orthophonists;
 create policy "ortho crée son propre compte" on orthophonists for insert
   with check (code = auth.uid()::text);
 
 -- --- Rattachements : un ortho authentifié gère ses propres rattachements ---
+drop policy if exists "ortho lit ses rattachements" on patient_assignments;
 create policy "ortho lit ses rattachements" on patient_assignments for select
   using (ortho_code = auth.uid()::text);
+drop policy if exists "ortho crée ses rattachements" on patient_assignments;
 create policy "ortho crée ses rattachements" on patient_assignments for insert
   with check (ortho_code = auth.uid()::text);
+drop policy if exists "ortho supprime ses rattachements" on patient_assignments;
 create policy "ortho supprime ses rattachements" on patient_assignments for delete
   using (ortho_code = auth.uid()::text);
 
 -- --- Patients : un ortho authentifié voit/modifie SEULEMENT ses patients ---
+drop policy if exists "ortho lit ses patients" on patients;
 create policy "ortho lit ses patients" on patients for select
   using (exists (
     select 1 from patient_assignments pa
     where pa.patient_code = patients.code and pa.ortho_code = auth.uid()::text
   ));
+drop policy if exists "ortho modifie ses patients" on patients;
 create policy "ortho modifie ses patients" on patients for update
   using (exists (
     select 1 from patient_assignments pa
@@ -239,16 +256,19 @@ create policy "ortho modifie ses patients" on patients for update
   ));
 
 -- --- Séances / erreurs / photos : lecture ortho limitée à ses patients ---
+drop policy if exists "ortho lit les séances de ses patients" on sessions;
 create policy "ortho lit les séances de ses patients" on sessions for select
   using (exists (
     select 1 from patient_assignments pa
     where pa.patient_code = sessions.code and pa.ortho_code = auth.uid()::text
   ));
+drop policy if exists "ortho lit les erreurs de ses patients" on error_events;
 create policy "ortho lit les erreurs de ses patients" on error_events for select
   using (exists (
     select 1 from patient_assignments pa
     where pa.patient_code = error_events.code and pa.ortho_code = auth.uid()::text
   ));
+drop policy if exists "ortho lit les photos de ses patients" on patient_media;
 create policy "ortho lit les photos de ses patients" on patient_media for select
   using (exists (
     select 1 from patient_assignments pa
@@ -256,11 +276,13 @@ create policy "ortho lit les photos de ses patients" on patient_media for select
   ));
 
 -- --- Rapports & notes : entièrement réservés à l'orthophoniste concerné ---
+drop policy if exists "ortho gère les rapports de ses patients" on reports;
 create policy "ortho gère les rapports de ses patients" on reports for all
   using (exists (
     select 1 from patient_assignments pa
     where pa.patient_code = reports.code and pa.ortho_code = auth.uid()::text
   ));
+drop policy if exists "ortho gère les notes de ses patients" on notes;
 create policy "ortho gère les notes de ses patients" on notes for all
   using (exists (
     select 1 from patient_assignments pa
@@ -604,6 +626,7 @@ create table if not exists admins (
 );
 alter table admins enable row level security;
 
+drop policy if exists "admin lit son propre compte" on admins;
 create policy "admin lit son propre compte" on admins for select
   using (code = auth.uid()::text);
 -- Volontairement AUCUNE policy d'insertion ouverte à l'utilisateur : un
@@ -639,14 +662,17 @@ alter table content_items enable row level security;
 -- Lecture publique : UNIQUEMENT les contributions déjà approuvées (donc
 -- jamais le nom/contact d'un contributeur dont la proposition est encore
 -- en attente ou a été refusée — ces lignes restent invisibles à "anon").
+drop policy if exists "tout le monde lit les contributions approuvées" on content_items;
 create policy "tout le monde lit les contributions approuvées" on content_items for select
   using (status = 'approved');
 
 -- Lecture complète (tous statuts) réservée aux administrateurs.
+drop policy if exists "admin lit toutes les contributions" on content_items;
 create policy "admin lit toutes les contributions" on content_items for select
   using (exists (select 1 from admins a where a.code = auth.uid()::text));
 
 -- Validation/refus réservés aux administrateurs.
+drop policy if exists "admin met à jour le statut des contributions" on content_items;
 create policy "admin met à jour le statut des contributions" on content_items for update
   using (exists (select 1 from admins a where a.code = auth.uid()::text));
 
