@@ -1,0 +1,258 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Source+Sans+3:wght@400;500;600;700&family=Noto+Sans:wght@400;600;700&display=swap');
+/* v6.13 : Noto Sans ajoutée en repli — bien meilleure couverture Unicode
+   pour les caractères latins étendus utilisés en kabyle (Ɣ ɣ ḥ ɛ ṛ ṣ ṭ ẓ
+   ḍ ǧ) que Source Sans 3, qui peut leur substituer un glyphe approchant
+   (ex: Ɣ rendu proche d'un Y) plutôt qu'une vraie case vide — repéré sur
+   le badge "TAƔECT" affiché comme "TAYECT". */
+
+/* =====================================================================
+   v6.25 — REFONTE VISUELLE
+   ---------------------------------------------------------------------
+   L'ancienne palette (fond crème #f4f1ea + accent terracotta #d98e48)
+   est presque exactement la combinaison la plus généralement produite
+   par défaut pour ce genre d'app — pas un mauvais choix en soi, mais
+   pas un choix DÉLIBÉRÉ pour ReParole spécifiquement.
+   Nouvelle direction : la "repousse" — la rééducation comme une
+   reprise tranquille, pas un chantier clinique. Vert forêt plus riche
+   (déjà la couleur d'Ami, approfondi), doré chaud à la place du
+   terracotta (moins vu, garde la chaleur), fond lin plutôt que crème
+   pure. Un seul geste signature : les grandes cartes (login, tableau
+   de bord, question) ont un coin organique asymétrique au lieu d'un
+   rectangle à coins uniformément arrondis — les petits éléments
+   interactifs (boutons, champs, choix) restent réguliers pour ne pas
+   créer de confusion visuelle.
+   Contrastes vérifiés manuellement (WCAG AA, texte normal ≥4.5:1) —
+   voir le calcul détaillé dans les notes de session, pas dans ce
+   fichier pour rester lisible.
+===================================================================== */
+:root{
+  /* v6.32 : "harmoniser les couleurs sur tout le site" — le beige de
+     base (--bg) est remplacé par un ton clair et frais, dans la même
+     famille que le teal de l'écran de connexion, plutôt que de garder
+     deux identités de couleur différentes selon l'écran. Reste CLAIR
+     volontairement (pas aussi sombre que le dégradé de connexion) :
+     tout le texte foncé de l'app (--ink) suppose un fond clair —
+     passer en fond sombre partout aurait rendu illisible tous les
+     écrans d'exercice, pas seulement changé une couleur. */
+  --bg:#e6efec;--surface:#ffffff;--surface-soft:#f2f7f5;
+  --ink:#22271d;--ink-soft:#54615b;
+  --accent:#26594b;--accent-dark:#17362a;--accent-soft:#dfe9e4;
+  --warm:#9c6b2e;--warm-soft:#f1e4c6;
+  --error:#a6503f;--error-soft:#f3e2dd;
+  --line:#cdd9d4;--radius:18px;--radius-organic:30px 14px 30px 14px;
+  --shadow:0 6px 28px rgba(23,54,42,.10);
+  /* v6.30 : teal dédié à l'écran de connexion — plus frais que --accent,
+     garde un lien de famille (même base verte) sans changer la couleur
+     d'Ami ni des boutons ailleurs dans l'app. */
+  --teal-deep:#0f322e;--teal:#1d6259;--teal-light:#6fc2ae;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:18px}
+body{font-family:'Source Sans 3',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+/* v6.13 : en kabyle uniquement, on préfère Noto Sans (bien meilleure
+   couverture des caractères latins étendus Ɣ ɣ ḥ ɛ ṛ ṣ ṭ ẓ ḍ ǧ) plutôt
+   que de changer la typographie pour tout le monde. `html[lang]` est
+   mis à jour dynamiquement par I18N.apply() dans js/i18n.js. */
+html[lang="kab"] body, html[lang="kab"] button, html[lang="kab"] input{
+  font-family:'Noto Sans','Source Sans 3',system-ui,sans-serif;
+}
+h1,h2,h3{font-family:'Fraunces',serif;font-weight:600;line-height:1.15;letter-spacing:-.01em;font-variation-settings:'opsz' 144;font-optical-sizing:none}
+.wrap{max-width:680px;margin:0 auto;padding:24px 20px 80px}
+/* v6.27 : la carte de connexion — premier écran vu par tout le monde —
+   reste plus large que le reste de l'app (les écrans d'exercice restent
+   à 680px, plus lisibles pour du texte). */
+#login .wrap{max-width:760px}
+@media (max-width:480px){
+  .login-card{padding:32px 22px}
+  #login .wrap{padding:16px 12px 60px}
+}
+.screen{display:none;animation:fade .4s ease}
+.screen.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.brand{display:flex;align-items:center;gap:10px;font-family:'Fraunces',serif;font-size:1.35rem;color:var(--accent-dark);font-variation-settings:'opsz' 144;font-optical-sizing:none}
+.brand .dot{width:14px;height:14px;border-radius:50%;background:var(--warm)}
+.who{font-size:.85rem;color:var(--ink-soft)}
+.who button{margin-left:12px}
+
+button{font-family:inherit;font-size:1rem;cursor:pointer;border:none;border-radius:14px;padding:14px 22px;font-weight:600;transition:.15s}
+.btn-primary{background:var(--accent);color:#fff;width:100%;box-shadow:0 2px 0 var(--accent-dark)}
+.btn-primary:hover{background:var(--accent-dark);box-shadow:0 1px 0 var(--accent-dark);transform:translateY(1px)}
+.btn-primary:active{transform:translateY(2px);box-shadow:none}
+.btn-ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent);padding:8px 16px;font-size:.85rem}
+.btn-ghost:hover{background:var(--accent-soft)}
+
+.login-card{background:var(--surface);border-radius:var(--radius-organic);padding:48px 40px;box-shadow:var(--shadow);margin-top:48px;text-align:center;position:relative;overflow:hidden}
+/* v6.30 : retour utilisateur — voulait un fond plus "frais", type
+   bleu, mais un vrai bleu casserait le lien avec le vert d'Ami et tous
+   les boutons/badges de l'app. Compromis : un teal profond (même
+   famille que le vert, plus frais) plutôt qu'un bleu qui romprait
+   l'identité visuelle construite ailleurs. */
+#login{
+  position:relative;
+  min-height:100vh;
+  background:linear-gradient(160deg, var(--teal-deep) 0%, var(--teal) 55%, var(--teal-light) 130%);
+}
+.bg-decor{
+  position:fixed; inset:0; width:100%; height:100%;
+  z-index:0; pointer-events:none;
+}
+.bg-decor-lines{ fill:none; stroke-width:1.6; }
+.bg-decor-lines.c1{ stroke:var(--warm-soft); opacity:.35; }
+.bg-decor-lines.c2{ stroke:#ffffff; opacity:.22; }
+.bg-decor-node{ opacity:.6; }
+.bg-decor-node.c1{ fill:var(--warm-soft); }
+.bg-decor-node.c2{ fill:#ffffff; }
+.bg-decor-node.c3{ fill:var(--warm); }
+.bg-decor-node.pulse{ animation:node-fade 7s ease-in-out infinite; }
+.bg-decor-node.pulse.d2{ animation-delay:1.5s; }
+.bg-decor-node.pulse.d3{ animation-delay:3s; }
+.bg-decor-node.pulse.d4{ animation-delay:4.5s; }
+@keyframes node-fade{ 0%,100%{ opacity:.4; } 50%{ opacity:.95; } }
+@media (prefers-reduced-motion: reduce){ .bg-decor-node.pulse{ animation:none; opacity:.65; } }
+#login .wrap{ position:relative; z-index:1; }
+.login-card h1{font-size:2.2rem;color:var(--accent-dark);margin-bottom:6px}
+.login-card p.sub{color:var(--ink-soft);margin-bottom:28px}
+.field{text-align:left;margin-bottom:18px}
+.field label{display:block;font-weight:600;font-size:.9rem;margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;padding:14px 16px;font-size:1.05rem;font-family:inherit;border:1.5px solid var(--line);border-radius:12px;background:var(--surface-soft)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent)}
+.field textarea{resize:vertical;min-height:70px}
+.field .hint-small{font-size:.78rem;color:var(--ink-soft);margin-top:4px}
+.hint{font-size:.78rem;color:var(--ink-soft);margin-top:18px}
+
+.greeting{margin:24px 0 8px}
+.greeting h2{font-size:1.8rem}
+.greeting p{color:var(--ink-soft)}
+.level-badge{display:inline-flex;align-items:center;gap:8px;background:var(--accent-soft);color:var(--accent-dark);padding:6px 14px;border-radius:30px;font-weight:600;font-size:.85rem;margin-top:10px}
+.card{background:var(--surface);border-radius:var(--radius-organic);padding:24px;box-shadow:var(--shadow);margin-top:18px}
+/* v6.25 : légère apparition échelonnée des cartes du tableau de bord —
+   discret, un seul passage au chargement, jamais en boucle. */
+.wrap .card{animation:card-rise .5s ease backwards}
+.wrap .card:nth-of-type(1){animation-delay:.05s}
+.wrap .card:nth-of-type(2){animation-delay:.12s}
+.wrap .card:nth-of-type(3){animation-delay:.19s}
+.wrap .card:nth-of-type(4){animation-delay:.26s}
+@keyframes card-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){
+  .wrap .card{animation:none}
+}
+.card h3{font-size:1.15rem;margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;text-align:center}
+.stat .num{font-family:'Fraunces',serif;font-size:1.9rem;color:var(--accent-dark);font-variation-settings:'opsz' 144;font-optical-sizing:none}
+.stat .lab{font-size:.78rem;color:var(--ink-soft)}
+.ex-list{display:grid;gap:12px;margin-top:8px}
+.ex-item{display:flex;align-items:center;gap:16px;padding:16px;border:1.5px solid var(--line);border-radius:14px;cursor:pointer;transition:.15s;background:var(--surface-soft)}
+.ex-item:hover{border-color:var(--accent);background:var(--accent-soft);transform:translateY(-1px);box-shadow:0 4px 12px rgba(23,54,42,.08)}
+.ex-icon{font-size:1.6rem;width:46px;height:46px;display:grid;place-items:center;background:var(--accent-soft);border-radius:12px;flex-shrink:0}
+.ex-item .t{font-weight:600}
+.ex-item .d{font-size:.82rem;color:var(--ink-soft)}
+.badge-voice{font-size:.68rem;background:var(--warm);color:#fff;padding:2px 8px;border-radius:20px;margin-left:8px;vertical-align:middle}
+/* v6.24.1 : badge "Pro" — visible directement sur le tableau de bord,
+   pas seulement après avoir cliqué (retour du rôle UX/Accessibilité). */
+.badge-pro{font-size:.68rem;background:var(--accent-dark);color:#fff;padding:2px 8px;border-radius:20px;margin-left:8px;vertical-align:middle;font-weight:700}
+.ex-item.ex-locked{opacity:.72}
+.ex-item.ex-locked:hover{opacity:.9}
+
+.ex-header{display:flex;align-items:center;justify-content:space-between;margin:20px 0}
+.progress{height:8px;background:var(--line);border-radius:8px;overflow:hidden;margin:16px 0 28px}
+.progress span{display:block;height:100%;background:var(--accent);transition:width .4s}
+.prompt-card{background:var(--surface);border-radius:var(--radius-organic);padding:36px 28px;box-shadow:var(--shadow);text-align:center}
+.prompt-emoji{font-size:5rem;line-height:1;margin-bottom:12px}
+.prompt-text{font-size:1.3rem;color:var(--ink-soft);margin-bottom:8px}
+.prompt-main{font-family:'Fraunces',serif;font-size:2rem;color:var(--accent-dark);margin-bottom:6px;font-variation-settings:'opsz' 144;font-optical-sizing:none}
+.blank{color:var(--warm);letter-spacing:3px}
+.choices{display:grid;gap:12px;margin-top:24px}
+.choice{background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:18px;font-size:1.2rem;font-weight:600;color:var(--ink);transition:.15s}
+.choice:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 12px rgba(23,54,42,.08)}
+.choice:active{transform:translateY(0)}
+.choice.correct{background:var(--accent);color:#fff;border-color:var(--accent)}
+.choice.wrong{background:var(--error-soft);border-color:var(--error);color:var(--error)}
+.feedback{text-align:center;margin-top:22px;font-weight:600;min-height:28px}
+.feedback.good{color:var(--accent)}
+.feedback.bad{color:var(--error)}
+
+.mic-btn{width:96px;height:96px;border-radius:50%;background:var(--warm);color:#fff;font-size:2.2rem;margin:8px auto 0;display:grid;place-items:center;transition:.2s;border:none}
+.mic-btn:hover{transform:scale(1.05)}
+.mic-btn.listening{background:var(--error);animation:pulse 1.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(177,83,70,.5)}70%{box-shadow:0 0 0 22px rgba(177,83,70,0)}100%{box-shadow:0 0 0 0 rgba(177,83,70,0)}}
+.heard{margin-top:16px;font-size:1.1rem;min-height:28px;color:var(--ink-soft)}
+.heard b{color:var(--accent-dark)}
+.voice-warn{font-size:.8rem;color:var(--error);margin-top:14px;background:var(--error-soft);padding:10px 14px;border-radius:10px}
+.speak-btn{background:var(--accent-soft);color:var(--accent-dark);border:none;border-radius:30px;padding:8px 16px;font-size:.85rem;font-weight:600;margin-top:6px;cursor:pointer}
+.speak-btn:hover{background:#d5dcc6}
+
+.word-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:18px;min-height:40px}
+.chip{background:var(--accent-soft);color:var(--accent-dark);padding:6px 14px;border-radius:20px;font-weight:600;font-size:.95rem;animation:fade .3s}
+
+.ai-note{background:var(--accent-soft);border-radius:14px;padding:14px 18px;margin-top:20px;font-size:.85rem;color:var(--accent-dark);display:flex;gap:10px;align-items:flex-start}
+.ai-note b{display:block}
+
+.storage-flag{font-size:.72rem;color:var(--ink-soft);text-align:center;margin-top:24px}
+.storage-flag b{color:var(--accent-dark)}
+
+.reco-tag{font-size:.66rem;background:var(--accent);color:#fff;padding:2px 9px;border-radius:20px;margin-left:8px;vertical-align:middle;font-weight:700}
+
+/* =====================================================================
+   MODE LECTURE FACILITÉE (dyslexie)
+   Recommandations : interlignage 1.5+, espacement lettres/mots augmenté,
+   taille de texte plus grande, alignement à gauche, pas d'italique,
+   fond crème (déjà le cas). On applique via la classe body.dys.
+   ===================================================================== */
+body.dys{ font-size:20px; }
+body.dys .prompt-text,
+body.dys .ex-item .d,
+body.dys p,
+body.dys .ai-note,
+body.dys .field label,
+body.dys .choice{
+  line-height:1.7;
+  letter-spacing:.06em;
+  word-spacing:.18em;
+  text-align:left;
+}
+body.dys .prompt-card{ text-align:left; }
+body.dys .choice{ font-size:1.25rem; }
+body.dys i, body.dys em{ font-style:normal; font-weight:600; } /* pas d'italique */
+/* v6.25 : la bulle d'Ami utilise l'italique via CSS (pas <i>/<em>), donc
+   pas couverte par la règle ci-dessus — même principe appliqué ici. */
+body.dys .companion-bubble{ font-style:normal; font-family:'Source Sans 3',system-ui,sans-serif; }
+/* option police spécialisée (laissée au choix, effet variable selon les personnes) */
+body.dys.dys-font{ font-family:'Comic Sans MS','Trebuchet MS',Verdana,sans-serif; }
+
+/* Bandeau de préférences d'accessibilité */
+.access-bar{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
+.access-toggle{background:var(--surface);border:1.5px solid var(--line);border-radius:30px;padding:8px 14px;font-size:.82rem;font-weight:600;color:var(--ink-soft);cursor:pointer}
+.access-toggle.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+/* v6.18 : menu déroulant de langue (remplace les boutons, trop nombreux
+   avec 8 langues) */
+.lang-select{
+  background:var(--surface);
+  border:1.5px solid var(--line);
+  border-radius:30px;
+  padding:8px 32px 8px 16px;
+  font-size:.85rem;
+  font-weight:600;
+  color:var(--ink);
+  font-family:inherit;
+  cursor:pointer;
+  appearance:none;
+  -webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235a655e'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 14px center;
+}
+.lang-select:focus{ outline:none; border-color:var(--accent); }
+
+/* Zone d'import de bilan */
+.upload-zone{border:2px dashed var(--line);border-radius:14px;padding:20px;text-align:center;background:var(--surface-soft);cursor:pointer;margin-top:8px}
+.upload-zone:hover{border-color:var(--accent);background:var(--accent-soft)}
+.bilan-text{background:var(--surface-soft);border:1.5px solid var(--line);border-radius:12px;padding:14px;margin-top:12px;max-height:220px;overflow:auto;white-space:pre-wrap;font-size:.92rem;line-height:1.6;text-align:left}
+.bilan-checklist{display:grid;gap:10px;margin-top:12px;text-align:left}
+.bilan-check{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer}
+.bilan-check input{margin-top:5px;transform:scale(1.3)}
+.erased-note{font-size:.8rem;color:var(--accent-dark);background:var(--accent-soft);border-radius:10px;padding:10px 14px;margin-top:12px;text-align:center}
+
+/* v6.6 : petite animation pour le jeu de mémoire */
+@keyframes pop{ 0%{transform:scale(.6);opacity:0} 60%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
