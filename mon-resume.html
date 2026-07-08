@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReParole — Mon résumé</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/ortho.css">
+</head>
+<body>
+<div class="report-page" id="report">
+  <p class="hint">Préparation de votre résumé…</p>
+</div>
+<div class="wrap no-print" style="text-align:center">
+  <button class="btn-primary report-print-btn" onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button>
+  <a href="index.html" class="btn-ghost" style="display:block;max-width:280px;margin:0 auto;text-align:center;text-decoration:none">← Revenir à mon espace</a>
+</div>
+
+<script src="js/storage.js"></script>
+<script src="js/learner.js"></script>
+<script src="js/charts.js"></script>
+<script>
+const Store = window.ReParoleStore;
+const AI = window.Learner;
+const LEVEL_NAMES = {1:'Doux', 2:'Intermédiaire', 3:'Avancé'};
+
+// Libellés lisibles pour les types de séance enregistrés (voir
+// js/app.js, js/memory.js, js/conversation.js pour les valeurs brutes
+// de `type`) — page française uniquement pour l'instant (v1), comme
+// l'espace aidant à ses débuts.
+const TYPE_LABELS = {
+  denomination:'Nommer les images',
+  completion:'Compléter la phrase',
+  comprehension:'Comprendre la consigne',
+  repetition:'Répéter à voix haute',
+  denomination_orale:'Nommer à voix haute',
+  fluence:'Fluence verbale',
+  intonation:'Répéter avec intonation',
+  photos_perso:'Nommer vos photos',
+  memoire:'Jeu de mémoire'
+};
+function typeLabel(type){
+  if(TYPE_LABELS[type]) return TYPE_LABELS[type];
+  if(type && type.indexOf('conversation_')===0) return 'Conversation guidée';
+  return type || '—';
+}
+
+function qs(name){ return new URLSearchParams(location.search).get(name); }
+function escapeHTML(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function buildSummary(){
+  const code = qs('code');
+  const el = document.getElementById('report');
+  if(!code){
+    el.innerHTML = '<p>Aucun code de suivi dans l\'adresse. Revenez à votre espace et cliquez sur « Imprimer mon résumé » depuis votre tableau de bord.</p>';
+    return;
+  }
+
+  const patient = await Store.loadPatient(code);
+  if(!patient){
+    el.innerHTML = '<p>Dossier introuvable pour ce code.</p>';
+    return;
+  }
+
+  const profile = await Store.loadProfile(code);
+  AI.load(profile);
+  const insightText = AI.insight();
+
+  const hist = await Store.history(code);
+  const journalEntries = await Store.loadJournalEntries(code);
+  const period = hist.length ? {
+    start: new Date(hist[0].at),
+    end: new Date(hist[hist.length-1].at)
+  } : null;
+  const trend = AI.trend(hist);
+
+  const successPct = patient.total ? Math.round(100 * patient.correct / patient.total) : null;
+
+  el.innerHTML = `
+    <div class="report-header">
+      <h1>Mon résumé — ReParole</h1>
+      <div class="r-sub">${patient.name} — Généré le ${new Date().toLocaleDateString('fr-FR')}</div>
+      ${period ? `<div class="r-sub">Période couverte : du ${period.start.toLocaleDateString('fr-FR')} au ${period.end.toLocaleDateString('fr-FR')}</div>` : ''}
+    </div>
+
+    <div class="report-section">
+      <h2>Où j'en suis</h2>
+      <div class="report-grid">
+        <div><div class="num">${patient.sessions}</div><div class="lab">séances</div></div>
+        <div><div class="num">${successPct!==null ? successPct+'%' : '—'}</div><div class="lab">réussite</div></div>
+        <div><div class="num">${patient.streak||0}</div><div class="lab">jours d'affilée</div></div>
+      </div>
+      ${window.Charts ? `<div style="margin-top:16px">${Charts.successLine(hist)}</div>` : ''}
+      <p style="color:var(--ink-soft);font-size:.85rem;margin-top:8px">${
+        trend.direction==='hausse' ? `📈 En hausse sur mes dernières séances (+${trend.deltaPct} points).`
+        : trend.direction==='baisse' ? `📉 Une petite baisse récemment (${trend.deltaPct} points) — c'est normal d'avoir des hauts et des bas.`
+        : trend.direction==='stable' ? `➡️ Stable sur mes dernières séances.`
+        : `Encore quelques séances pour dégager une tendance.`
+      }</p>
+      <p style="color:var(--ink-soft);font-size:.85rem;margin-top:4px">Niveau actuel : <b>${LEVEL_NAMES[patient.level]||patient.level}</b></p>
+    </div>
+
+    <div class="report-section">
+      <h2>Ce sur quoi je travaille en ce moment</h2>
+      <p>${insightText}</p>
+    </div>
+
+    <div class="report-section">
+      <h2>Mes dernières séances</h2>
+      ${hist.length ? `
+        <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+          <thead><tr style="text-align:left;border-bottom:2px solid var(--line)"><th>Date</th><th>Exercice</th><th>Score</th></tr></thead>
+          <tbody>
+            ${hist.slice(-20).reverse().map(s=>`<tr style="border-bottom:1px solid var(--line)">
+              <td>${new Date(s.at).toLocaleDateString('fr-FR')}</td><td>${typeLabel(s.type)}</td><td>${s.score}/${s.total}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>` : '<p>Aucune séance enregistrée pour l\'instant.</p>'}
+    </div>
+
+    ${journalEntries.length ? `
+    <div class="report-section">
+      <h2>Mon journal</h2>
+      ${journalEntries.slice(0, 10).map(e=>`
+        <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--line)">
+          <div style="color:var(--ink-soft);font-size:.8rem;margin-bottom:2px">${new Date(e.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' })}</div>
+          <div style="font-size:.9rem;white-space:pre-wrap">${escapeHTML(e.text)}</div>
+        </div>`).join('')}
+    </div>` : ''}
+
+    <p class="report-note">
+      Ce résumé est généré automatiquement à partir de mon utilisation de l'application ReParole.
+      C'est un outil pour m'aider à suivre mon parcours au fil du temps — il ne remplace pas un
+      bilan ou un avis orthophonique. Je peux le montrer à mon orthophoniste si je le souhaite.
+    </p>
+  `;
+}
+buildSummary();
+</script>
+</body>
+</html>
