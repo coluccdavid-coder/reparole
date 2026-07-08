@@ -24,7 +24,7 @@
 // 👉 POUR ACTIVER LE CLOUD : colle ici les 2 valeurs de ton projet Supabase
 //    (Project Settings > API).
 const SUPABASE_URL = "";      // ex : "https://xxxx.supabase.co"
-const SUPABASE_ANON_KEY = ""; // la clé "anon public"
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3eGxzaGVkenBmYWVzendrdGR4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNjQyODEsImV4cCI6MjA5ODg0MDI4MX0.5jFrFEqNr_wbVSjjXebzO-vAWR_eR7qi_u9Lb1lbwVI"; // la clé "anon public"
 
 const CLOUD_ENABLED = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 let supa = null;
