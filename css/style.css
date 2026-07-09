@@ -74,7 +74,7 @@ h1,h2,h3{font-family:'Source Sans 3',sans-serif;font-weight:600;line-height:1.15
 /* v6.27 : la carte de connexion — premier écran vu par tout le monde —
    reste plus large que le reste de l'app (les écrans d'exercice restent
    à 680px, plus lisibles pour du texte). */
-#login .wrap{max-width:760px}
+#login .wrap{max-width:960px}
 @media (max-width:480px){
   .login-card{padding:32px 22px}
   #login .wrap{padding:16px 12px 60px}
