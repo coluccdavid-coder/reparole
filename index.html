@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReParole — Rééducation de la parole</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2F6B57">
+<link rel="icon" href="icons/icon-192.png">
+<!-- v6.23 : balises spécifiques iOS — Safari ne lit pas le manifest.json
+     de la même façon que Chrome/Android pour "Ajouter à l'écran d'accueil" -->
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ReParole">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/ortho.css">
+<link rel="stylesheet" href="css/companion.css">
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="login" class="screen active">
+  <svg class="bg-decor" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <g class="bg-decor-lines c1">
+      <path d="M40 500 Q150 400 260 440 T480 360"/>
+      <path d="M260 440 Q300 300 420 260"/>
+      <path d="M480 360 Q560 320 600 220"/>
+      <path d="M150 400 Q100 300 60 220"/>
+    </g>
+    <g class="bg-decor-lines c2">
+      <path d="M620 480 Q680 400 760 420"/>
+      <path d="M420 260 Q460 150 560 110"/>
+      <path d="M60 220 Q120 130 220 110"/>
+      <path d="M600 220 Q650 160 720 150"/>
+    </g>
+    <circle class="bg-decor-node c1 pulse"    cx="40"  cy="500" r="8"/>
+    <circle class="bg-decor-node c1 pulse d2" cx="260" cy="440" r="11"/>
+    <circle class="bg-decor-node c2 pulse d3" cx="480" cy="360" r="9"/>
+    <circle class="bg-decor-node c1 pulse d4" cx="420" cy="260" r="7"/>
+    <circle class="bg-decor-node c2 pulse"    cx="600" cy="220" r="8"/>
+    <circle class="bg-decor-node c3 pulse d2" cx="150" cy="400" r="6"/>
+    <circle class="bg-decor-node c1 pulse d3" cx="60"  cy="220" r="7"/>
+    <circle class="bg-decor-node c2 pulse d4" cx="220" cy="110" r="6"/>
+    <circle class="bg-decor-node c1 pulse"    cx="560" cy="110" r="7"/>
+    <circle class="bg-decor-node c3 pulse d2" cx="720" cy="150" r="6"/>
+    <circle class="bg-decor-node c2 pulse d3" cx="760" cy="420" r="8"/>
+    <circle class="bg-decor-node c1 pulse d4" cx="620" cy="480" r="6"/>
+  </svg>
+  <div class="wrap">
+    <div class="login-card">
+      <div class="brand" style="justify-content:center;font-size:1.7rem"><span class="dot"></span>ReParole</div>
+      <div class="lang-switch" data-lang-switcher style="display:flex;justify-content:center;gap:8px;margin-bottom:14px"></div>
+      <h1 data-i18n="login_title">Bon retour</h1>
+      <p class="sub" data-i18n="login_sub">Votre rééducation, à votre rythme.</p>
+      <p class="hint" style="background:var(--accent-soft);border-radius:10px;padding:10px 14px;margin-bottom:16px" data-i18n="not_a_substitute">Cet outil vous aide à patienter, il ne remplace pas votre rendez-vous avec un·e orthophoniste.</p>
+      <div class="field"><label for="name" data-i18n="field_name">Votre prénom</label><input id="name" type="text" placeholder="Ex : Marie" autocomplete="given-name"></div>
+      <div class="field"><label for="code" data-i18n="field_code">Code de suivi</label><input id="code" type="password" data-i18n-placeholder="field_code_ph" placeholder="Reçu à votre première visite"></div>
+      <button class="btn-primary" data-i18n="btn_login" onclick="login()">Se connecter</button>
+      <p class="hint" id="login-error" style="color:var(--error)"></p>
+      <p class="hint" style="margin:16px 0 8px" data-i18n="first_visit">Première visite ?</p>
+      <button class="btn-ghost" style="width:100%" data-i18n="btn_new_patient" onclick="createNewPatient()">Créer un nouveau dossier</button>
+      <p class="hint" data-i18n="progress_saved_note">🔒 Votre progression est sauvegardée et rechargée à chaque connexion avec le même code.</p>
+      <div class="access-bar">
+        <button class="access-toggle" data-pref="dyslexia" data-i18n="access_toggle_dyslexia" onclick="Prefs.toggle('dyslexia')">🔤 Lecture facilitée (dyslexie)</button>
+        <button class="access-toggle" data-pref="dysFont" data-i18n="access_toggle_font" onclick="Prefs.toggle('dysFont')">Police adaptée</button>
+        <button class="access-toggle" data-pref="shortSession" data-i18n="access_toggle_short_session" onclick="Prefs.toggle('shortSession')">⏱️ Séance courte (3 questions)</button>
+      </div>
+      <p class="hint"><a href="dashboard-ortho.html" style="color:var(--accent)" data-i18n="ortho_link">Vous êtes orthophoniste ? Accéder à l'espace pro →</a></p>
+      <p class="hint"><a href="aidant.html" style="color:var(--accent)" data-i18n="caregiver_link">Vous êtes un proche aidant ? Accéder à l'espace aidant →</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ASSESSMENT (première connexion) ============ -->
+<div id="assessment" class="screen">
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>ReParole</div>
+  </div>
+  <div class="wrap">
+    <div id="assess-body"></div>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<div id="dashboard" class="screen">
+  <svg class="bg-decor bg-decor-light" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <g class="bg-decor-lines c1">
+      <path d="M40 500 Q150 400 260 440 T480 360"/>
+      <path d="M260 440 Q300 300 420 260"/>
+      <path d="M480 360 Q560 320 600 220"/>
+      <path d="M150 400 Q100 300 60 220"/>
+    </g>
+    <g class="bg-decor-lines c2">
+      <path d="M620 480 Q680 400 760 420"/>
+      <path d="M420 260 Q460 150 560 110"/>
+      <path d="M60 220 Q120 130 220 110"/>
+      <path d="M600 220 Q650 160 720 150"/>
+    </g>
+    <circle class="bg-decor-node c1 pulse"    cx="40"  cy="500" r="8"/>
+    <circle class="bg-decor-node c1 pulse d2" cx="260" cy="440" r="11"/>
+    <circle class="bg-decor-node c2 pulse d3" cx="480" cy="360" r="9"/>
+    <circle class="bg-decor-node c1 pulse d4" cx="420" cy="260" r="7"/>
+    <circle class="bg-decor-node c2 pulse"    cx="600" cy="220" r="8"/>
+    <circle class="bg-decor-node c3 pulse d2" cx="150" cy="400" r="6"/>
+    <circle class="bg-decor-node c1 pulse d3" cx="60"  cy="220" r="7"/>
+    <circle class="bg-decor-node c2 pulse d4" cx="220" cy="110" r="6"/>
+    <circle class="bg-decor-node c1 pulse"    cx="560" cy="110" r="7"/>
+    <circle class="bg-decor-node c3 pulse d2" cx="720" cy="150" r="6"/>
+    <circle class="bg-decor-node c2 pulse d3" cx="760" cy="420" r="8"/>
+    <circle class="bg-decor-node c1 pulse d4" cx="620" cy="480" r="6"/>
+  </svg>
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>ReParole</div>
+    <div class="who"><span id="who-name"></span><button class="btn-ghost" data-i18n="btn_logout" onclick="logout()">Quitter</button></div>
+  </div>
+  <div class="wrap">
+    <div id="your-code-banner" class="cloud-warning" style="display:none;background:var(--accent-soft);color:var(--accent-dark)">
+      <b><span data-i18n="code_banner_title">Votre code de suivi :</span> <span id="your-code-value" style="font-family:monospace;font-size:1.1rem"></span></b>
+      <p style="margin-top:6px" data-i18n="code_banner_note">Notez-le quelque part de sûr — c'est votre seul moyen de retrouver votre dossier la prochaine fois. Vous pouvez aussi le transmettre à votre orthophoniste.</p>
+      <button class="btn-ghost" style="margin-top:10px" data-i18n="code_banner_dismiss" onclick="dismissCodeBanner()">J'ai noté mon code</button>
+    </div>
+    <div class="greeting">
+      <h2 id="hello"></h2>
+      <p data-i18n="ready_today">Prêt·e pour votre séance du jour ?</p>
+      <div class="level-badge">📊 <span data-i18n="level_adapted">Niveau adapté :</span> <span id="level-name"></span></div>
+    </div>
+    <div class="companion-widget" id="companion-dashboard"></div>
+    <div class="dashboard-grid">
+    <div class="card">
+      <h3 data-i18n="progress_title">Votre progression</h3>
+      <div class="stats">
+        <div class="stat"><div class="num" id="s-sessions">0</div><div class="lab" data-i18n="stat_sessions">séances</div></div>
+        <div class="stat"><div class="num" id="s-success">—</div><div class="lab" data-i18n="stat_success">réussite</div></div>
+        <div class="stat"><div class="num" id="s-streak">0</div><div class="lab" data-i18n="stat_streak">jours d'affilée</div></div>
+      </div>
+      <div id="progress-chart" style="margin-top:18px"></div>
+      <p id="trend-note" style="color:var(--ink-soft);font-size:.85rem;margin-top:8px" aria-live="polite"></p>
+      <button class="btn-ghost" style="margin-top:12px" data-i18n="print_summary_btn" onclick="openMySummary()">🖨️ Imprimer mon résumé</button>
+    </div>
+    <div class="card">
+      <h3 data-i18n="journal_title">Mon journal</h3>
+      <p class="hint" style="margin-top:0;margin-bottom:12px" data-i18n="journal_intro">
+        Pas un questionnaire — juste un espace libre. Comment ça s'est
+        passé aujourd'hui ? Ce que vous écrivez n'est jamais analysé
+        automatiquement, et reste privé sauf si vous choisissez de le
+        montrer (via le résumé imprimable).
+      </p>
+      <textarea id="journal-text" data-i18n-placeholder="journal_placeholder" placeholder="Écrivez ce que vous voulez ici…" style="width:100%;min-height:80px;padding:12px;border-radius:10px;border:1.5px solid var(--line);font-family:inherit;font-size:.95rem;resize:vertical"></textarea>
+      <button class="btn-primary" style="margin-top:10px" data-i18n="journal_add_btn" onclick="saveJournalEntry()">Ajouter au journal</button>
+      <p id="journal-status" style="font-size:.85rem;margin-top:8px"></p>
+      <div id="journal-entries" style="margin-top:14px;display:grid;gap:10px"></div>
+    </div>
+    <div class="card">
+      <h3 data-i18n="exercises_title">Exercices recommandés</h3>
+      <p id="lang-partial-note" style="display:none;color:var(--ink-soft);font-size:.82rem;background:var(--accent-soft);border-radius:10px;padding:10px 12px;margin-bottom:12px">
+        Tanγalt: kra n yimeẓla-yagi mazal-iten s tefransist — asuɣel s taqbaylit ur yefri ara akk.
+        <br><span style="opacity:.8">(Traduction en cours — certains exercices restent en français pour l'instant.)</span>
+      </p>
+      <div class="ai-note" style="margin-top:0;margin-bottom:14px"><span>🤖</span><div><b data-i18n="assistant_learned">Votre assistant a appris</b><span id="learner-insight" data-i18n="assistant_learning">Je découvre votre profil…</span><div id="insight-partial-note" style="display:none;font-size:.78rem;color:var(--ink-soft);margin-top:4px" data-i18n="content_not_translated_yet"></div></div></div>
+      <div class="ex-list" id="ex-list">
+        <div class="ex-item" data-type="denomination" onclick="startExercise('denomination')"><div class="ex-icon">🖼️</div><div><div class="t"><span data-i18n="ex_denomination_t">Nommer les images</span></div><div class="d" data-i18n="ex_denomination_d">Retrouver le mot qui correspond à l'image</div></div></div>
+        <div class="ex-item" data-type="completion" onclick="startExercise('completion')"><div class="ex-icon">✍️</div><div><div class="t"><span data-i18n="ex_completion_t">Compléter la phrase</span></div><div class="d" data-i18n="ex_completion_d">Trouver le mot manquant</div></div></div>
+        <div class="ex-item" data-type="comprehension" onclick="startExercise('comprehension')"><div class="ex-icon">👂</div><div><div class="t"><span data-i18n="ex_comprehension_t">Comprendre la consigne</span></div><div class="d" data-i18n="ex_comprehension_d">Choisir la bonne réponse</div></div></div>
+        <div class="ex-item" data-type="repetition" onclick="startExercise('repetition')"><div class="ex-icon">🎤</div><div><div class="t"><span data-i18n="ex_repetition_t">Répéter à voix haute</span> <span class="badge-voice" data-i18n="voice_badge">VOIX</span></div><div class="d" data-i18n="ex_repetition_d">Prononcer le mot — l'app vous écoute</div></div></div>
+        <div class="ex-item" data-type="intonation" onclick="startExercise('intonation')"><div class="ex-icon">🎭</div><div><div class="t"><span data-i18n="ex_intonation_t">Répéter avec intonation</span> <span class="badge-voice" data-i18n="voice_badge">VOIX</span></div><div class="d" data-i18n="ex_intonation_d">Question, exclamation, phrase simple</div></div></div>
+        <div class="ex-item" onclick="stopRecognition();show('memory');Memory.start()"><div class="ex-icon">🧠</div><div><div class="t" data-i18n="ex_memory_t">Jeu de mémoire</div><div class="d" data-i18n="ex_memory_d">Retrouver l'ordre d'une séquence d'images — sans voix</div></div></div>
+        <div class="ex-item" onclick="stopRecognition();show('phonation');Phonation.intro()"><div class="ex-icon">🫁</div><div><div class="t" data-i18n="ex_phonation_t">Tenue vocale</div><div class="d" data-i18n="ex_phonation_d">Tenir un son confortablement, à votre rythme</div></div></div>
+        <div class="ex-item" data-type="denomination_orale" onclick="startExercise('denomination_orale')"><div class="ex-icon">🗣️</div><div><div class="t"><span data-i18n="ex_denomination_orale_t">Nommer à voix haute</span> <span class="badge-voice" data-i18n="voice_badge">VOIX</span></div><div class="d" data-i18n="ex_denomination_orale_d">Dire le nom de l'image sans choix</div></div></div>
+        <div class="ex-item" data-type="fluence" onclick="startExercise('fluence')"><div class="ex-icon">⏱️</div><div><div class="t"><span data-i18n="ex_fluence_t">Fluence verbale</span> <span class="badge-voice" data-i18n="voice_badge">VOIX</span></div><div class="d" data-i18n="ex_fluence_d">Citer un maximum de mots d'une catégorie</div></div></div>
+        <div class="ex-item" data-type="photos_perso" onclick="startExercise('photos_perso')" style="display:none"><div class="ex-icon">📷</div><div><div class="t"><span data-i18n="ex_photos_t">Nommer vos photos</span> <span class="badge-voice" data-i18n="voice_badge">VOIX</span></div><div class="d" data-i18n="ex_photos_d">Vos propres photos, à votre rythme</div></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="photos_title">Vos photos</h3>
+      <p style="color:var(--ink-soft);font-size:.85rem" data-i18n="photos_desc">Ajoutez une photo de votre quotidien (un objet, un lieu, une personne) et le mot qui va avec — elle deviendra un exercice personnalisé.</p>
+      <div class="media-grid" id="media-grid"></div>
+      <div class="upload-photo-form">
+        <input type="text" id="media-label" data-i18n-placeholder="photos_label_ph" placeholder="Le mot à travailler (ex : jardin)">
+        <input type="file" id="media-file" accept="image/*">
+        <button class="btn-primary" data-i18n="add_photo" onclick="uploadMedia()">Ajouter la photo</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="conversation_title">Conversation guidée</h3>
+      <p style="color:var(--ink-soft);font-size:.85rem;margin-bottom:12px" data-i18n="conversation_desc">Des mises en situation pas à pas (chez le médecin, au café, au téléphone) pour pratiquer la communication du quotidien.</p>
+      <p id="conversation-partial-note" style="display:none;color:var(--ink-soft);font-size:.82rem;background:var(--accent-soft);border-radius:10px;padding:10px 12px;margin-bottom:12px" data-i18n="conversation_untranslated_note"></p>
+      <button class="btn-primary" data-i18n="conversation_start" onclick="stopRecognition();show('conversation');Conversation.menu()">Commencer une conversation guidée</button>
+    </div>
+    <div class="card" id="pro-teaser-card">
+      <h3 data-i18n="pro_teaser_title">ReParole Pro</h3>
+      <p style="color:var(--ink-soft);font-size:.85rem;margin-bottom:12px" data-i18n="pro_teaser_desc">Toutes les langues, tous les exercices vocaux, la conversation guidée, sans limite de séances par jour.</p>
+      <button class="btn-ghost" onclick="showPricing()" data-i18n="pro_teaser_btn">Voir les offres</button>
+    </div>
+    <!-- v6.56 : résiliation "en 3 clics" (loi française) — un compte
+         pro doit pouvoir gérer/résilier son abonnement aussi facilement
+         qu'il y a souscrit. Redirige vers le Customer Portal Stripe,
+         qui gère cela nativement (changement de carte, résiliation,
+         factures), sans avoir à construire cette interface nous-mêmes. -->
+    <div class="card" id="manage-subscription-card" style="display:none">
+      <h3 data-i18n="manage_subscription_title">Mon abonnement</h3>
+      <p style="color:var(--ink-soft);font-size:.85rem;margin-bottom:12px" data-i18n="manage_subscription_desc">Modifier votre moyen de paiement, consulter vos factures, ou résilier votre abonnement.</p>
+      <button class="btn-ghost" onclick="manageSubscription()" data-i18n="manage_subscription_btn">Gérer mon abonnement</button>
+      <p id="manage-subscription-error" style="color:var(--error);font-size:.85rem;margin-top:8px"></p>
+    </div>
+    <div class="card">
+      <h3 data-i18n="caregiver_card_title">Espace aidant</h3>
+      <p class="hint" style="margin-top:0;margin-bottom:14px" data-i18n="caregiver_card_intro">
+        Donnez un accès en lecture seule à un proche qui vous accompagne :
+        il ou elle pourra voir vos progrès et recevoir chaque jour un
+        conseil pratique, sans jamais pouvoir modifier votre dossier.
+      </p>
+      <div id="caregiver-none" style="display:none">
+        <button class="btn-primary" data-i18n="caregiver_create_btn" onclick="generateCaregiverAccess()">Créer un accès aidant</button>
+      </div>
+      <div id="caregiver-active" style="display:none">
+        <p style="font-size:.85rem;color:var(--ink-soft);margin-bottom:6px" data-i18n="caregiver_code_label">Code à transmettre à votre proche (page « Espace aidant ») :</p>
+        <p id="caregiver-code-display" style="font-family:monospace;font-size:1.15rem;background:var(--surface-soft);border-radius:10px;padding:10px 14px;text-align:center;letter-spacing:.5px;word-break:break-all"></p>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn-ghost" data-i18n="caregiver_regenerate_btn" onclick="generateCaregiverAccess()">Régénérer (révoque l'ancien code)</button>
+          <button class="btn-ghost" style="color:#b23b3b;border-color:#b23b3b" data-i18n="caregiver_revoke_btn" onclick="revokeCaregiverAccess()">Révoquer l'accès</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="reminders_title">Rappels</h3>
+      <p style="color:var(--ink-soft);font-size:.85rem;margin-bottom:10px" data-i18n="reminders_desc">Recevoir un petit rappel par email si vous n'êtes pas venu·e depuis quelques jours (facultatif).</p>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+        <input type="checkbox" id="reminder-opt-in" onchange="toggleReminder()" style="transform:scale(1.3)">
+        <span data-i18n="reminders_enable">Activer les rappels par email</span>
+      </label>
+      <input type="email" id="reminder-email" placeholder="votre@email.fr" onblur="saveReminderEmail()" style="display:none;width:100%;margin-top:10px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;font-family:inherit">
+    </div>
+    </div>
+
+    <div class="access-bar" data-lang-switcher></div>
+    <div class="access-bar">
+      <button class="access-toggle" data-pref="dyslexia" data-i18n="access_toggle_dyslexia" onclick="Prefs.toggle('dyslexia')">🔤 Lecture facilitée</button>
+      <button class="access-toggle" data-pref="dysFont" data-i18n="access_toggle_font" onclick="Prefs.toggle('dysFont')">Police adaptée</button>
+      <button class="access-toggle" data-pref="shortSession" data-i18n="access_toggle_short_session" onclick="Prefs.toggle('shortSession')">⏱️ Séance courte (3 questions)</button>
+    </div>
+    <p class="storage-flag"><span data-i18n="storage_mode_label">Mode de sauvegarde :</span> <b id="storage-mode">…</b></p>
+    <p class="storage-flag" id="save-status" role="status" aria-live="polite"></p>
+    <p class="storage-flag"><a href="contribuer.html" style="color:inherit" data-i18n="propose_translation_link">✍️ Vous parlez une langue pas encore bien traduite ? Proposez une correction</a></p>
+  </div>
+</div>
+
+<!-- ============ CONVERSATION GUIDÉE ============ -->
+<div id="conversation" class="screen">
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>ReParole</div>
+    <div class="who"><button class="btn-ghost" data-i18n="back_btn" onclick="goDashboard()">← Retour</button></div>
+  </div>
+  <div class="wrap">
+    <div class="companion-widget" id="companion-conversation"></div>
+    <div id="conv-body"></div>
+  </div>
+</div>
+
+<!-- ============ JEU DE MÉMOIRE ============ -->
+<div id="memory" class="screen">
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>ReParole</div>
+    <div class="who"><button class="btn-ghost" data-i18n="back_btn" onclick="goDashboard()">← Retour</button></div>
+  </div>
+  <div class="wrap">
+    <div class="companion-widget" id="companion-memory"></div>
+    <div id="memory-body"></div>
+  </div>
+</div>
+
+<!-- ============ TENUE VOCALE ============ -->
+<div id="phonation" class="screen">
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>ReParole</div>
+    <div class="who"><button class="btn-ghost" data-i18n="back_btn" onclick="goDashboard()">← Retour</button></div>
+  </div>
+  <div class="wrap">
+    <div class="companion-widget" id="companion-phonation"></div>
+    <div id="phonation-body"></div>
+  </div>
+</div>
+
+<!-- ============ TARIFS / PASSER AU COMPTE PRO ============ -->
+<div id="pricing" class="screen">
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>ReParole</div>
+    <div class="who"><button class="btn-ghost" onclick="goDashboard()" data-i18n="back_to_home">← Retour à l'accueil</button></div>
+  </div>
+  <div class="wrap">
+    <div class="greeting">
+      <h2 data-i18n="pricing_title">Passer à ReParole Pro</h2>
+      <p data-i18n="pricing_intro">Toutes les langues, tous les exercices vocaux, la conversation guidée, et plus de séances par jour.</p>
+    </div>
+
+    <!-- v6.56 : consentement légal obligatoire avant paiement — deux
+         cases distinctes, cochées activement par le patient (pas
+         pré-cochées), conformément aux exigences du Code de la
+         consommation (CGV/CGU + renonciation expresse au délai de
+         rétractation, art. L221-28 13°). Voir cgv.html article 5. -->
+    <div class="card">
+      <p class="hint" style="margin-top:0">
+        <a href="cgv.html" target="_blank" data-i18n="pricing_read_cgv">Lire les Conditions Générales de Vente</a>
+        &nbsp;·&nbsp;
+        <a href="cgu.html" target="_blank" data-i18n="pricing_read_cgu">Lire les Conditions Générales d'Utilisation</a>
+      </p>
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-top:10px">
+        <input type="checkbox" id="pricing-accept-cgv" style="margin-top:3px;transform:scale(1.2)">
+        <span data-i18n="pricing_accept_cgv_checkbox">J'ai lu et j'accepte les Conditions Générales de Vente et d'Utilisation.</span>
+      </label>
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-top:10px">
+        <input type="checkbox" id="pricing-waive-withdrawal" style="margin-top:3px;transform:scale(1.2)">
+        <span data-i18n="pricing_waive_withdrawal_checkbox">Je demande l'accès immédiat à l'offre Pro et renonce expressément à mon délai de rétractation de 14 jours.</span>
+      </label>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="pricing_includes_title">Ce que ça change concrètement</h3>
+      <ul style="margin:0 0 0 20px;color:var(--ink-soft);font-size:.92rem;line-height:1.9">
+        <li data-i18n="pricing_feature_1">Toutes les langues (espagnol, italien, portugais, allemand, arabe, anglais)</li>
+        <li data-i18n="pricing_feature_2">Les exercices vocaux avancés (répétition, dénomination orale, fluence, intonation)</li>
+        <li data-i18n="pricing_feature_3">La conversation guidée</li>
+        <li data-i18n="pricing_feature_4">Plus de limite de séances par jour</li>
+      </ul>
+    </div>
+
+    <div class="card" style="text-align:center">
+      <h3 data-i18n="pricing_monthly_label">Mensuel</h3>
+      <div style="font-family:'Source Sans 3',sans-serif;font-size:2.4rem;color:var(--accent-dark)">2,99 €<span style="font-size:1rem;color:var(--ink-soft)" data-i18n="pricing_per_month">/mois</span></div>
+      <button class="btn-primary" style="margin-top:14px" onclick="startCheckout('patient_monthly')" data-i18n="pricing_subscribe">S'abonner</button>
+    </div>
+
+    <div class="card" style="text-align:center;border:2px solid var(--accent)">
+      <span class="badge-pro" style="position:relative;top:-4px" data-i18n="pricing_best_value">Meilleur prix</span>
+      <h3 data-i18n="pricing_annual_label">Annuel</h3>
+      <div style="font-family:'Source Sans 3',sans-serif;font-size:2.4rem;color:var(--accent-dark)">19,99 €<span style="font-size:1rem;color:var(--ink-soft)" data-i18n="pricing_per_year">/an</span></div>
+      <p style="color:var(--ink-soft);font-size:.85rem" data-i18n="pricing_annual_detail">Soit environ 1,67 €/mois</p>
+      <button class="btn-primary" style="margin-top:14px" onclick="startCheckout('patient_annual')" data-i18n="pricing_subscribe">S'abonner</button>
+    </div>
+
+    <p class="hint" id="pricing-error" style="color:var(--error);text-align:center"></p>
+    <p class="hint" style="text-align:center" data-i18n="pricing_secure_note">🔒 Paiement sécurisé par Stripe (carte bancaire ou PayPal). Aucune donnée de carte n'est stockée par ReParole.</p>
+  </div>
+</div>
+
+<!-- ============ EXERCISE ============ -->
+<div id="exercise" class="screen">
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>ReParole</div>
+    <div class="who"><button class="btn-ghost" data-i18n="back_btn" onclick="goDashboard()">← Retour</button></div>
+  </div>
+  <div class="wrap">
+    <div class="ex-header"><h2 id="ex-title" style="font-size:1.4rem"></h2><span id="ex-count" dir="ltr" style="color:var(--ink-soft);font-size:.9rem"></span></div>
+    <div class="progress"><span id="ex-progress" style="width:0%"></span></div>
+    <div class="companion-widget" id="companion-exercise"></div>
+    <div id="ex-body"></div>
+    <div class="feedback" id="ex-feedback" role="status" aria-live="polite"></div>
+    <div class="ai-note"><span>🤖</span><div><b data-i18n="adaptive_assistant_label">Assistant adaptatif</b><span id="ai-message" aria-live="polite" data-i18n="adaptive_assistant_default_msg">J'observe vos réponses pour ajuster la difficulté.</span></div></div>
+  </div>
+</div>
+
+<!-- Ordre important : préférences -> données -> stockage -> apprentissage -> bilan -> application -->
+<script src="js/prefs.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/exercises.js"></script>
+<script src="js/exercises-kab.js"></script>
+<script src="js/exercises-sango.js"></script>
+<script src="js/exercises-en.js"></script>
+<script src="js/exercises-es.js"></script>
+<script src="js/exercises-it.js"></script>
+<script src="js/exercises-pt.js"></script>
+<script src="js/exercises-de.js"></script>
+<script src="js/exercises-ar.js"></script>
+<script src="js/exercises-tr.js"></script>
+<script src="js/exercises-pl.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/learner.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/assessment.js"></script>
+<script src="js/companion.js"></script>
+<script src="js/app.js"></script>
+<script src="js/conversation.js"></script>
+<script src="js/memory.js"></script>
+<script src="js/phonation.js"></script>
+<script>Prefs.load();</script>
+<script>
+// v6.62 : enregistrement du service worker pour le mode hors-ligne, +
+// notification de mise à jour disponible — jusqu'ici, une nouvelle
+// version déployée restait invisible tant que le patient ne faisait
+// pas un rechargement forcé (Ctrl+Maj+R) lui-même, ce qui n'est pas un
+// geste naturel à demander. self.skipWaiting()/clients.claim() (déjà
+// présents dans sw.js) font qu'un nouveau service worker prend le
+// contrôle rapidement en arrière-plan — il manquait juste un signal
+// visible pour dire au patient "il y a du nouveau, actualisez quand
+// vous voulez". Bannière discrète plutôt qu'un rechargement forcé
+// automatique : un patient au milieu d'un exercice ne doit pas se
+// faire recharger la page sans l'avoir demandé.
+if('serviceWorker' in navigator){
+  let swRegistration = null;
+  const checkForUpdate = () => { if(swRegistration) swRegistration.update().catch(()=>{}); };
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      swRegistration = reg;
+      // Vérifie activement s'il existe une version plus récente,
+      // plutôt que d'attendre passivement un futur rechargement.
+      reg.update().catch(()=>{});
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if(!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          // "installed" + un controller déjà actif = vraie mise à jour
+          // (pas la toute première installation du service worker).
+          if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
+            showUpdateBanner();
+          }
+        });
+      });
+    }).catch(err => {
+      console.warn('Service worker non enregistré (l\'app fonctionne quand même) :', err);
+    });
+  });
+  // v6.66 : sur mobile, un patient rouvre le plus souvent un onglet ou
+  // une PWA déjà ouverte (icône sur l'écran d'accueil) plutôt que de
+  // faire un vrai rechargement — "load" ne se redéclenche alors
+  // jamais, donc la vérification d'une nouvelle version ne se faisait
+  // qu'une seule fois, à la toute première ouverture. Signalé par
+  // l'utilisateur : la bannière n'apparaissait jamais sur téléphone.
+  // Corrigé en revérifiant à chaque retour au premier plan.
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'visible') checkForUpdate();
+  });
+}
+function showUpdateBanner(){
+  if(document.getElementById('sw-update-banner')) return; // déjà affichée
+  const banner = document.createElement('div');
+  banner.id = 'sw-update-banner';
+  banner.setAttribute('role', 'status');
+  // v6.66 : "calc(18px + env(safe-area-inset-bottom))" pour rester
+  // au-dessus de la barre gestuelle des iPhone récents (sans encoche
+  // physique de bouton "Accueil"), qui recouvrirait sinon le bas de
+  // la bannière — invisible en test sur ordinateur, seulement sur un
+  // vrai téléphone, d'où le signalement de l'utilisateur.
+  banner.style.cssText = 'position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:9999;background:var(--accent-dark);color:#fff;padding:12px 16px;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);display:flex;align-items:center;gap:12px;font-size:.9rem;max-width:92vw';
+  banner.innerHTML = `<span>🔄 Nouvelle version disponible</span>
+    <button style="background:#fff;color:var(--accent-dark);border:none;border-radius:8px;padding:6px 12px;font-weight:600;cursor:pointer" onclick="window.location.reload()">Actualiser</button>
+    <button aria-label="Fermer" style="background:transparent;color:#fff;border:none;font-size:1.1rem;cursor:pointer;padding:0 4px" onclick="this.closest('#sw-update-banner').remove()">✕</button>`;
+  document.body.appendChild(banner);
+}
+</script>
+<script src="js/footer.js"></script>
+</body>
+</html>
