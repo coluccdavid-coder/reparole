@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReParole — Suivi des enregistrements audio (kabyle / sango)</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2F6B57">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Noto+Sans:wght@400;600;700&family=Fraunces:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .audio-table{width:100%;border-collapse:collapse;margin-top:14px;font-size:.95rem}
+  .audio-table th,.audio-table td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  .audio-table th{color:var(--ink-soft);font-weight:600;font-size:.82rem;text-transform:uppercase;letter-spacing:.03em}
+  .audio-status-ok{color:var(--success);font-weight:600}
+  .audio-status-missing{color:var(--ink-soft)}
+  .audio-summary{display:flex;gap:20px;flex-wrap:wrap;margin-top:10px}
+  .audio-summary .num{font-size:1.6rem;font-weight:700;color:var(--accent-dark)}
+  .audio-summary .lab{font-size:.8rem;color:var(--ink-soft)}
+  .audio-lang-heading{margin-top:32px;display:flex;align-items:center;gap:10px}
+  .audio-checking{color:var(--ink-soft);font-size:.85rem;font-style:italic}
+  code.slug{background:var(--accent-soft);padding:2px 6px;border-radius:6px;font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="wrap" style="max-width:760px">
+  <div class="login-card" style="margin-top:40px;text-align:left">
+    <div class="brand" style="justify-content:center;font-size:1.7rem"><span class="dot"></span>ReParole</div>
+    <a href="index.html" class="btn-ghost" style="display:block;width:100%;margin:14px 0;text-align:center;text-decoration:none">← Revenir à mon espace</a>
+    <h1 style="font-size:1.4rem;text-align:center">Suivi des enregistrements audio</h1>
+    <p class="sub" style="text-align:center">
+      Vérifie automatiquement, pour le kabyle et le sango, quels mots
+      de l'exercice « Nommer les images » ont déjà un enregistrement
+      réel dans <code>audio/kab/</code> et <code>audio/sango/</code>,
+      et lesquels manquent encore — voir les README de ces dossiers
+      pour savoir comment en ajouter.
+    </p>
+    <p class="hint" style="background:var(--accent-soft);border-radius:10px;padding:10px 14px">
+      ⚠️ Cette page vérifie l'existence réelle des fichiers en
+      interrogeant le serveur (aucune voix de synthèse n'est utilisée,
+      conformément aux README audio). Si elle est ouverte directement
+      depuis le disque (<code>file://</code>) plutôt que via
+      <code>python3 -m http.server</code> ou le site en ligne, certains
+      navigateurs bloquent ces vérifications — un message l'indique
+      ci-dessous le cas échéant.
+    </p>
+
+    <div id="audio-checklist-root"><p class="audio-checking">⏳ Vérification en cours…</p></div>
+  </div>
+</div>
+
+<script src="js/exercises-kab.js"></script>
+<script src="js/exercises-sango.js"></script>
+<script>
+// =====================================================================
+//  OUTIL DE SUIVI DES ENREGISTREMENTS AUDIO (v6.73)
+//  ---------------------------------------------------------------------
+//  Ne génère ni ne devine aucune traduction ni aucune prononciation —
+//  se contente de lister ce qui existe déjà dans js/exercises-kab.js /
+//  js/exercises-sango.js (vocabulaire déjà relu/sourcé, voir ces
+//  fichiers) et de vérifier lesquels de ces mots ont un fichier audio
+//  réel sur le serveur. Toute la logique de "quel fichier chercher où"
+//  est volontairement une COPIE de celle de js/app.js
+//  (partialLangAudioSlug / partialLangAudioFolder / kabAudioSlug) :
+//  cette page tourne seule, sans charger tout app.js (qui suppose un
+//  patient connecté). Si ce mécanisme change dans js/app.js, le
+//  reporter ici aussi.
+// =====================================================================
+
+function genericPartialLangSlug(word){
+  return (word||'').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+}
+
+// dossier réel sur le disque, pas toujours identique au code de langue
+// (voir le bug corrigé en v6.73 : le sango est 'sg' mais son dossier est
+// audio/sango/, pour rester lisible à un∙e contributeur∙rice humain∙e)
+const AUDIO_LANGS = [
+  { lang:'kab', folder:'kab', label:'Kabyle', bank:()=>window.BANK_KAB, slug:(w)=> (typeof kabAudioSlug==='function' ? kabAudioSlug(w) : genericPartialLangSlug(w)) },
+  { lang:'sg',  folder:'sango', label:'Sango', bank:()=>window.BANK_SG, slug:genericPartialLangSlug }
+];
+window.AUDIO_LANGS = AUDIO_LANGS;
+
+// Rassemble les mots uniques de l'exercice "Nommer les images", tous
+// niveaux confondus (seul exercice traduit pour ces deux langues à ce
+// jour — voir les README de js/exercises-kab.js / exercises-sango.js).
+function collectWords(bank){
+  if(!bank || !bank.denomination || !bank.denomination.items) return [];
+  const seen = new Set();
+  const words = [];
+  Object.values(bank.denomination.items).forEach(levelItems=>{
+    (levelItems||[]).forEach(item=>{
+      if(item.answer && !seen.has(item.answer)){ seen.add(item.answer); words.push(item.answer); }
+    });
+  });
+  return words;
+}
+
+async function fileExists(url){
+  try{
+    const res = await fetch(url, { method:'HEAD', cache:'no-store' });
+    return res.ok;
+  }catch(e){
+    return null; // impossible à vérifier (ex. ouvert en file://) — distinct de "absent"
+  }
+}
+
+async function buildChecklist(){
+  const root = document.getElementById('audio-checklist-root');
+  let html = '';
+  let blockedByProtocol = false;
+
+  for(const entry of AUDIO_LANGS){
+    const bank = entry.bank();
+    const words = collectWords(bank);
+    if(!words.length){
+      html += `<div class="audio-lang-heading"><h2 style="margin:0;font-size:1.1rem">${entry.label}</h2></div><p class="hint">Aucun vocabulaire trouvé (js/exercises-${entry.lang==='kab'?'kab':'sango'}.js).</p>`;
+      continue;
+    }
+
+    const rows = [];
+    let foundCount = 0;
+    for(const word of words){
+      const slug = entry.slug(word);
+      const path = `audio/${entry.folder}/${slug}.mp3`;
+      const exists = await fileExists(path);
+      if(exists === null) blockedByProtocol = true;
+      if(exists) foundCount++;
+      rows.push({ word, slug, path, exists });
+    }
+
+    html += `
+      <div class="audio-lang-heading"><h2 style="margin:0;font-size:1.1rem">${entry.label}</h2></div>
+      <div class="audio-summary">
+        <div><div class="num">${foundCount} / ${words.length}</div><div class="lab">enregistrements présents</div></div>
+      </div>
+      <table class="audio-table">
+        <thead><tr><th>Mot</th><th>Nom de fichier attendu</th><th>Statut</th></tr></thead>
+        <tbody>
+          ${rows.map(r=>`
+            <tr>
+              <td>${escapeHTML(r.word)}</td>
+              <td><code class="slug">${escapeHTML(r.path)}</code></td>
+              <td>${r.exists===null ? '<span class="audio-status-missing">? non vérifiable</span>' : r.exists ? '<span class="audio-status-ok">✅ présent</span>' : '<span class="audio-status-missing">— manquant</span>'}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  if(blockedByProtocol){
+    html = `<p class="hint" style="background:#fff3cd;border-radius:10px;padding:10px 14px">⚠️ Certains fichiers n'ont pas pu être vérifiés (souvent parce que la page est ouverte directement depuis le disque). Lancez <code>python3 -m http.server 8000</code> puis ouvrez cette page via <code>http://localhost:8000/audio-checklist.html</code>, ou utilisez le site en ligne.</p>` + html;
+  }
+
+  root.innerHTML = html || '<p class="hint">Rien à vérifier.</p>';
+}
+
+function escapeHTML(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+buildChecklist();
+</script>
+</body>
+</html>
