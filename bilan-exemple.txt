@@ -1,0 +1,12 @@
+COMPTE-RENDU DE BILAN ORTHOPHONIQUE (EXEMPLE DE TEST)
+
+Ce fichier est un exemple fictif, fourni uniquement pour tester la
+fonction « déposer un bilan » de l'application. Il ne concerne aucune
+personne réelle.
+
+Patient présentant une aphasie suite à un AVC ischémique.
+On note un manque du mot important (anomie) en dénomination.
+La compréhension orale est relativement préservée.
+La construction de phrases (syntaxe) reste difficile.
+
+Recommandations : travail de la dénomination et de la syntaxe.
