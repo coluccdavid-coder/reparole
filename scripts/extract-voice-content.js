@@ -22,7 +22,7 @@ const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
 const LANGS = ['fr','en','es','it','pt','de','ar','tr','pl','ja'];
-const SIMPLE_TYPES = ['denomination','denomination_orale','completion','comprehension','association','syntax','rhyme','story'];
+const SIMPLE_TYPES = ['denomination','denomination_orale','completion','comprehension','association','syntax','rhyme','story','heure','monnaie','calcul_quotidien','comparaison_nombres','prix']; // v6.164 : les 5 types d'acalculie ajoutés — absents depuis leur création (v6.156+), cette liste n'avait jamais été mise à jour depuis l'écriture du script (v6.150). Signalé par l'utilisateur : voix jamais générées pour ces exercices, donc toujours repli sur la voix du navigateur malgré la génération déjà faite pour le reste.
 
 function loadApp(){
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');

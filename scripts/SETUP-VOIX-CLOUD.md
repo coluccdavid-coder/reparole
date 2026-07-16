@@ -46,6 +46,15 @@ langue (`audio/fr/`, `audio/en/`, etc.). Ces fichiers doivent être
 **déployés avec le reste du site** (même dépôt GitHub Pages) pour que
 l'app les trouve.
 
+## ⚠️ Une fois ce dossier généré, ne l'écrasez plus jamais par erreur
+
+Signalé par l'utilisateur (v6.162) : si votre habitude est de tout
+supprimer puis remettre un zip complet à chaque mise à jour, **ce
+dossier `audio/` ne doit jamais faire partie de ce qui est
+supprimé** — aucun zip livré ne le contient (il n'existe que sur
+votre dépôt, généré par vous seul avec votre clé Google). Voir
+`HEBERGEMENT.md` pour la méthode de mise à jour sûre.
+
 ## Coût réel
 
 Avec le volume actuel (~48 000 caractères), en voix Neural2 : **moins

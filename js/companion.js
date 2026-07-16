@@ -214,7 +214,12 @@ const COMPANION_PHRASES = {
       association: "This exercise helps you find what goes together, without needing to speak.",
       syntax: "This exercise works on sentence structure: recognising the one that's correctly built.",
       rhyme: "This exercise works on word sounds: recognising which ones rhyme.",
-      story: "This exercise gives you a short text to read, then a question to check what you understood."
+      story: "This exercise gives you a short text to read, then a question to check what you understood.",
+      heure: "This exercise trains recognizing the time — a useful everyday skill, often affected after a brain injury.",
+      monnaie: "This exercise works with everyday numbers: counting coins, notes, or change.",
+      calcul_quotidien: "This exercise offers small practical calculations, like those you'd meet in a real day.",
+      comparaison_nombres: "This exercise trains comparing numbers — bigger, smaller — at your own pace.",
+      prix: "This exercise works on a practical sense of prices, to find everyday reference points."
     }
   },
   es: {
@@ -290,7 +295,12 @@ const COMPANION_PHRASES = {
       association: "Este ejercicio te ayuda a encontrar lo que va junto, sin necesidad de hablar.",
       syntax: "Este ejercicio trabaja la construcción de frases: reconocer la que está bien formada.",
       rhyme: "Este ejercicio trabaja la sonoridad de las palabras: reconocer cuáles riman.",
-      story: "Este ejercicio te presenta un texto breve para leer, y luego una pregunta para comprobar lo que has entendido."
+      story: "Este ejercicio te presenta un texto breve para leer, y luego una pregunta para comprobar lo que has entendido.",
+      heure: "Este ejercicio entrena a reconocer la hora — una habilidad útil en el día a día, a menudo afectada tras una lesión cerebral.",
+      monnaie: "Este ejercicio trabaja los números de la vida cotidiana: contar monedas, billetes, o el cambio.",
+      calcul_quotidien: "Este ejercicio propone pequeños cálculos prácticos, como los que se encuentran en un día real.",
+      comparaison_nombres: "Este ejercicio entrena a comparar números — más grande, más pequeño — a tu ritmo.",
+      prix: "Este ejercicio trabaja el sentido práctico de los precios, para recuperar referencias cotidianas."
     }
   },
   it: {
@@ -366,7 +376,12 @@ const COMPANION_PHRASES = {
       association: "Questo esercizio ti aiuta a trovare cosa va insieme, senza bisogno di parlare.",
       syntax: "Questo esercizio lavora sulla struttura della frase: riconoscere quella costruita correttamente.",
       rhyme: "Questo esercizio lavora sulla sonorità delle parole: riconoscere quelle che fanno rima.",
-      story: "Questo esercizio propone un breve testo da leggere, poi una domanda per verificare cosa hai capito."
+      story: "Questo esercizio propone un breve testo da leggere, poi una domanda per verificare cosa hai capito.",
+      heure: "Questo esercizio allena a riconoscere l'ora — una competenza utile nella vita quotidiana, spesso compromessa dopo una lesione cerebrale.",
+      monnaie: "Questo esercizio lavora sui numeri della vita quotidiana: contare monete, banconote, o il resto.",
+      calcul_quotidien: "Questo esercizio propone piccoli calcoli pratici, come quelli di una giornata reale.",
+      comparaison_nombres: "Questo esercizio allena a confrontare i numeri — più grande, più piccolo — al tuo ritmo.",
+      prix: "Questo esercizio lavora sul senso pratico dei prezzi, per ritrovare punti di riferimento quotidiani."
     }
   },
   pt: {
@@ -442,7 +457,12 @@ const COMPANION_PHRASES = {
       association: "Este exercício ajuda-o a encontrar o que combina, sem precisar de falar.",
       syntax: "Este exercício trabalha a estrutura da frase: reconhecer a que está bem construída.",
       rhyme: "Este exercício trabalha a sonoridade das palavras: reconhecer as que rimam.",
-      story: "Este exercício propõe um pequeno texto para ler, depois uma pergunta para verificar o que compreendeu."
+      story: "Este exercício propõe um pequeno texto para ler, depois uma pergunta para verificar o que compreendeu.",
+      heure: "Este exercício treina o reconhecimento das horas — uma competência útil no dia a dia, frequentemente afetada após uma lesão cerebral.",
+      monnaie: "Este exercício trabalha os números do dia a dia: contar moedas, notas, ou o troco.",
+      calcul_quotidien: "Este exercício propõe pequenos cálculos práticos, como os de um dia real.",
+      comparaison_nombres: "Este exercício treina a comparar números — maior, menor — ao seu ritmo.",
+      prix: "Este exercício trabalha o sentido prático dos preços, para reencontrar referências do dia a dia."
     }
   },
   de: {
@@ -518,7 +538,12 @@ const COMPANION_PHRASES = {
       association: "Diese Übung hilft Ihnen, zusammengehörige Dinge zu finden, ohne sprechen zu müssen.",
       syntax: "Diese Übung trainiert den Satzbau: den richtig gebildeten Satz erkennen.",
       rhyme: "Diese Übung trainiert den Klang von Wörtern: erkennen, welche sich reimen.",
-      story: "Diese Übung bietet einen kurzen Text zum Lesen, dann eine Frage, um zu prüfen, was Sie verstanden haben."
+      story: "Diese Übung bietet einen kurzen Text zum Lesen, dann eine Frage, um zu prüfen, was Sie verstanden haben.",
+      heure: "Diese Übung trainiert das Erkennen der Uhrzeit — eine nützliche Alltagsfähigkeit, die nach einer Hirnverletzung oft beeinträchtigt ist.",
+      monnaie: "Diese Übung arbeitet mit Alltagszahlen: Münzen, Scheine oder Wechselgeld zählen.",
+      calcul_quotidien: "Diese Übung bietet kleine praktische Berechnungen, wie man sie im echten Alltag trifft.",
+      comparaison_nombres: "Diese Übung trainiert den Vergleich von Zahlen — größer, kleiner — in Ihrem eigenen Tempo.",
+      prix: "Diese Übung arbeitet am praktischen Gespür für Preise, um Alltagsorientierung wiederzufinden."
     }
   },
   ar: {
@@ -594,7 +619,12 @@ const COMPANION_PHRASES = {
       association: "هذا التمرين يساعدك على إيجاد ما يتناسب معًا، دون الحاجة إلى الكلام.",
       syntax: "هذا التمرين يعمل على بنية الجملة: التعرف على الجملة المبنية بشكل صحيح.",
       rhyme: "هذا التمرين يعمل على أصوات الكلمات: التعرف على الكلمات التي تتقافى.",
-      story: "يقدم لك هذا التمرين نصًا قصيرًا لقراءته، ثم سؤالاً للتحقق مما فهمته."
+      story: "يقدم لك هذا التمرين نصًا قصيرًا لقراءته، ثم سؤالاً للتحقق مما فهمته.",
+      heure: "يدرّب هذا التمرين على التعرف على الوقت — مهارة مفيدة في الحياة اليومية، غالبًا ما تتأثر بعد إصابة دماغية.",
+      monnaie: "يعمل هذا التمرين على أرقام الحياة اليومية: عد القطع النقدية أو الأوراق النقدية أو الباقي.",
+      calcul_quotidien: "يقترح هذا التمرين حسابات صغيرة عملية، كتلك التي نواجهها في يوم حقيقي.",
+      comparaison_nombres: "يدرّب هذا التمرين على مقارنة الأرقام — أكبر، أصغر — بوتيرتك الخاصة.",
+      prix: "يعمل هذا التمرين على الحس العملي بالأسعار، لاستعادة معالم يومية."
     }
   },
   tr: {
@@ -670,7 +700,12 @@ const COMPANION_PHRASES = {
       association: "Bu alıştırma, konuşmaya gerek kalmadan neyin neyle gittiğini bulmanıza yardımcı olur.",
       syntax: "Bu alıştırma cümle yapısı üzerinde çalışır: doğru kurulmuş cümleyi tanımak.",
       rhyme: "Bu alıştırma kelimelerin sesi üzerinde çalışır: hangilerinin kafiyeli olduğunu tanımak.",
-      story: "Bu alıştırma okumanız için kısa bir metin sunar, ardından anladıklarınızı kontrol etmek için bir soru sorar."
+      story: "Bu alıştırma okumanız için kısa bir metin sunar, ardından anladıklarınızı kontrol etmek için bir soru sorar.",
+      heure: "Bu alıştırma saati tanımayı çalıştırır — beyin hasarından sonra sıklıkla etkilenen, günlük hayatta yararlı bir beceri.",
+      monnaie: "Bu alıştırma günlük hayatın sayılarıyla çalışır: madeni para, banknot veya para üstü saymak.",
+      calcul_quotidien: "Bu alıştırma, gerçek bir günde karşılaşılanlara benzer küçük pratik hesaplar sunar.",
+      comparaison_nombres: "Bu alıştırma sayıları karşılaştırmayı çalıştırır — büyük, küçük — kendi hızınızda.",
+      prix: "Bu alıştırma, günlük referans noktalarını bulmak için fiyatlara dair pratik bir anlayış üzerinde çalışır."
     }
   },
   pl: {
@@ -746,7 +781,12 @@ const COMPANION_PHRASES = {
       association: "To ćwiczenie pomaga znaleźć to, co do siebie pasuje, bez konieczności mówienia.",
       syntax: "To ćwiczenie ćwiczy budowę zdania: rozpoznanie poprawnie zbudowanego zdania.",
       rhyme: "To ćwiczenie ćwiczy brzmienie słów: rozpoznanie, które się rymują.",
-      story: "To ćwiczenie oferuje krótki tekst do przeczytania, a następnie pytanie sprawdzające zrozumienie."
+      story: "To ćwiczenie oferuje krótki tekst do przeczytania, a następnie pytanie sprawdzające zrozumienie.",
+      heure: "To ćwiczenie trenuje rozpoznawanie godziny — przydatną codzienną umiejętność, często zaburzoną po urazie mózgu.",
+      monnaie: "To ćwiczenie pracuje z liczbami codziennego życia: liczeniem monet, banknotów lub reszty.",
+      calcul_quotidien: "To ćwiczenie oferuje małe praktyczne obliczenia, podobne do tych z prawdziwego dnia.",
+      comparaison_nombres: "To ćwiczenie trenuje porównywanie liczb — większa, mniejsza — w Twoim tempie.",
+      prix: "To ćwiczenie pracuje nad praktycznym wyczuciem cen, aby odzyskać codzienne punkty odniesienia."
     }
   },
   ja: {
@@ -822,7 +862,12 @@ const COMPANION_PHRASES = {
       association: "この練習は、話す必要なく、何が何に合うかを見つける練習です。",
       syntax: "この練習は文の構造を鍛えます：正しく組み立てられた文を見分けます。",
       rhyme: "この練習は言葉の響きを鍛えます：どの言葉が韻を踏んでいるか見分けます。",
-      story: "この練習では短い文章を読んでから、理解度を確認する質問に答えます。"
+      story: "この練習では短い文章を読んでから、理解度を確認する質問に答えます。",
+      heure: "この練習は時刻の認識を鍛えます — 日常生活で役立つ能力で、脳損傷後によく影響を受けます。",
+      monnaie: "この練習は日常の数字を扱います：硬貨、紙幣、おつりを数えること。",
+      calcul_quotidien: "この練習は、実際の一日で出会うような簡単な実用的計算を提供します。",
+      comparaison_nombres: "この練習は数を比べることを鍛えます — 大きい、小さい — 自分のペースで。",
+      prix: "この練習は値段の実用的な感覚を養い、日常の目安を取り戻します。"
     }
   },
   // v6.112 : les phrases du compagnon "Ami" (46 par langue) manquaient

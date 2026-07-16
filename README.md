@@ -5812,6 +5812,71 @@ naturel) jusqu'à la prochaine génération.
 
 `CACHE_NAME` incrémenté (`reparole-v6-161` → `reparole-v6-162`).
 
+## v6.163 — Documenté : ne jamais écraser le dossier audio/ lors d'une mise à jour
+
+Suite directe de la génération des voix cloud : l'utilisateur a
+mentionné son habitude habituelle de tout supprimer puis remettre le
+zip complet à chaque mise à jour — une méthode qui **effacerait les
+~1 400 fichiers audio générés**, puisqu'aucun zip livré ne contient
+jamais ce dossier (il n'existe que sur le dépôt de l'utilisateur,
+généré avec sa propre clé Google Cloud).
+
+**Documenté à deux endroits, avec renvoi croisé** :
+- `HEBERGEMENT.md` : avertissement en haut du document, avant même
+  les instructions d'hébergement, plus une méthode de mise à jour
+  sûre (« tout supprimer sauf `audio/` »)
+- `scripts/SETUP-VOIX-CLOUD.md` : rappel juste après la section qui
+  explique comment ce dossier se génère
+
+Purement documentaire — aucun changement de code, `CACHE_NAME`
+incrémenté par cohérence avec le reste du versionnage
+(`reparole-v6-162` → `reparole-v6-163`).
+
+## v6.164 — Deux vrais trous trouvés pour l'acalculie : les voix, et le message d'Ami
+
+Signalé par l'utilisateur : "j'entends une série de code" sur
+"Estimer un prix" en japonais, malgré les deux générations de voix
+déjà faites. Sa capture d'écran a aussi révélé un second problème,
+visible juste au-dessus : le message d'Ami restait en français alors
+que toute l'interface était en japonais.
+
+**Le vrai bug voix, plus large que prévu** :
+`scripts/extract-voice-content.js` a une liste figée (`SIMPLE_TYPES`)
+des types d'exercice à extraire pour la génération de voix — écrite
+en v6.150, **jamais mise à jour** depuis la création des 5 exercices
+d'acalculie (v6.156+). Leur contenu n'a donc jamais été envoyé à
+Google, dans aucune des deux générations déjà faites — pas un raté
+ponctuel, un trou de couverture depuis le début. Corrigé : les 5
+types ajoutés à `SIMPLE_TYPES`. Le manifeste passe de 1 366 à **2 864
+textes** (presque le double) une fois régénéré.
+
+**Le message d'Ami** : les explications du compagnon pour les 5
+exercices d'acalculie n'existaient qu'en français
+(`js/companion.js`) — jamais traduites dans les 9 langues
+complètes, contrairement à tout le reste du contenu. Corrigé : 45
+nouvelles traductions (5 exercices × 9 langues).
+
+`tests/voice-extraction-coverage.test.js` (nouveau, 3 tests) :
+vérifie que tout type d'exercice à contenu textuel simple présent
+dans `BANK` est bien couvert par `SIMPLE_TYPES`, sauf exclusion
+documentée (repetition/intonation/fluence gérés séparément,
+photos_perso/memory/conversation volontairement exclus) — empêche un
+futur nouveau type de se retrouver dans la même situation sans qu'on
+s'en aperçoive.
+
+**⚠️ Voix cloud à régénérer, lot plus important cette fois** (~1 500
+nouveaux textes, contre 42 la dernière fois) :
+```bash
+node scripts/extract-voice-content.js
+GOOGLE_TTS_API_KEY=votre_clé node scripts/generate-voice-audio.js
+```
+Coût toujours attendu à 0 € (bien en dessous du palier gratuit
+mensuel). Puis `git add audio/`, `git commit`, `git push` comme
+d'habitude — **en pensant à ne jamais supprimer le dossier `audio/`
+existant avant de redéposer**, voir `HEBERGEMENT.md`.
+
+`CACHE_NAME` incrémenté (`reparole-v6-163` → `reparole-v6-164`).
+
 ## Tester
 
 ```

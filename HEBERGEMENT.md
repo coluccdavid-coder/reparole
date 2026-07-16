@@ -9,6 +9,25 @@ démo**. Pour un usage avec de vrais patients, il faudra un hébergement
 **certifié HDS** (données de santé) et la conformité RGPD — voir le README
 principal.
 
+## ⚠️ À NE JAMAIS FAIRE : remplacer tout le dossier en une fois si les voix cloud sont activées
+
+Signalé par l'utilisateur (v6.162) : l'habitude de « tout supprimer puis
+remettre le zip complet » à chaque mise à jour est **dangereuse une fois les
+voix cloud générées** (voir `scripts/SETUP-VOIX-CLOUD.md`). Le dossier
+`audio/` (jusqu'à ~1 400 fichiers .mp3) n'existe **que sur votre dépôt** —
+aucun zip livré ne le contient jamais, il ne peut pas être régénéré par un
+zip qui suivrait. Le supprimer par erreur veut dire refaire payer/attendre
+toute la génération.
+
+**La bonne méthode, à chaque mise à jour, si `audio/` existe déjà** :
+1. Supprimez tout **sauf le dossier `audio/`**
+2. Remettez le contenu du nouveau zip par-dessus
+3. `audio/` reste intact, tout le reste (code, contenu) se met à jour
+
+En cas de doute avant une manipulation risquée : copiez d'abord `audio/`
+quelque part en sécurité (votre ordinateur, par exemple) — ça permet de le
+remettre en place même après une erreur.
+
 ---
 
 ## Option 1 — Netlify Drop (le plus simple, sans compte technique)
@@ -25,6 +44,10 @@ C'est la méthode la plus rapide : on dépose le dossier, le site est en ligne.
 
 Pour mettre à jour le site plus tard, il suffit de redéposer le dossier.
 Créer un compte gratuit (facultatif) permet de garder la même adresse.
+
+⚠️ **Si les voix cloud sont activées** : voir l'avertissement tout en haut
+de ce document avant de redéposer — ne redéposez pas un dossier qui
+n'inclurait pas votre `audio/` à jour.
 
 ---
 
