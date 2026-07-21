@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<!-- v6.79 : préconnexion à Supabase — accélère la toute première requête API (DNS + TLS déjà négociés avant le premier appel réel) -->
+<link rel="preconnect" href="https://bwxlshedzpfaeszwktdx.supabase.co" crossorigin>
+<link rel="dns-prefetch" href="https://bwxlshedzpfaeszwktdx.supabase.co">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReParole — Administration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Noto+Sans:wght@400;600;700&family=Fraunces:wght@400;600&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/ortho.css">
+</head>
+<body>
+
+<!-- ============ CONNEXION ============ -->
+<div id="admin-login" class="screen active">
+  <svg class="bg-decor" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <g class="bg-decor-lines c1">
+      <path d="M40 500 Q150 400 260 440 T480 360"/>
+      <path d="M260 440 Q300 300 420 260"/>
+      <path d="M480 360 Q560 320 600 220"/>
+      <path d="M150 400 Q100 300 60 220"/>
+    </g>
+    <g class="bg-decor-lines c2">
+      <path d="M620 480 Q680 400 760 420"/>
+      <path d="M420 260 Q460 150 560 110"/>
+      <path d="M60 220 Q120 130 220 110"/>
+      <path d="M600 220 Q650 160 720 150"/>
+    </g>
+    <circle class="bg-decor-node c1 pulse"    cx="40"  cy="500" r="8"/>
+    <circle class="bg-decor-node c1 pulse d2" cx="260" cy="440" r="11"/>
+    <circle class="bg-decor-node c2 pulse d3" cx="480" cy="360" r="9"/>
+    <circle class="bg-decor-node c1 pulse d4" cx="420" cy="260" r="7"/>
+    <circle class="bg-decor-node c2 pulse"    cx="600" cy="220" r="8"/>
+    <circle class="bg-decor-node c3 pulse d2" cx="150" cy="400" r="6"/>
+    <circle class="bg-decor-node c1 pulse d3" cx="60"  cy="220" r="7"/>
+    <circle class="bg-decor-node c2 pulse d4" cx="220" cy="110" r="6"/>
+    <circle class="bg-decor-node c1 pulse"    cx="560" cy="110" r="7"/>
+    <circle class="bg-decor-node c3 pulse d2" cx="720" cy="150" r="6"/>
+    <circle class="bg-decor-node c2 pulse d3" cx="760" cy="420" r="8"/>
+    <circle class="bg-decor-node c1 pulse d4" cx="620" cy="480" r="6"/>
+  </svg>
+  <div class="wrap" style="max-width:520px">
+    <div class="login-card">
+      <div class="brand" style="justify-content:center;font-size:1.7rem"><span class="dot"></span>ReParole</div>
+      <h1 style="font-size:1.5rem">Administration</h1>
+      <p class="sub">Réservé aux personnes ayant un compte administrateur.</p>
+      <div class="field">
+        <label for="a-email">Email</label>
+        <input type="email" id="a-email" autocomplete="off" data-enter-submit="admin-login-btn">
+      </div>
+      <div class="field">
+        <label for="a-password">Mot de passe</label>
+        <input type="password" id="a-password" autocomplete="new-password" data-enter-submit="admin-login-btn">
+      </div>
+      <button id="admin-login-btn" class="btn-primary" onclick="AdminPanel.login()">Se connecter</button>
+      <p id="admin-login-error" style="color:#b23b3b;font-size:.85rem;margin-top:12px"></p>
+      <p class="hint" style="margin-top:12px"><a href="#" onclick="AdminPanel.forgotPassword();return false" style="color:var(--accent)">Mot de passe oublié ?</a></p>
+      <a href="index.html" class="btn-ghost" style="display:block;width:100%;margin-top:20px;text-align:center;text-decoration:none">← Revenir à l'accueil</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DÉFI DOUBLE AUTHENTIFICATION (v6.82) ============ -->
+<div id="admin-mfa-challenge" class="screen">
+  <svg class="bg-decor" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <g class="bg-decor-lines c1">
+      <path d="M40 500 Q150 400 260 440 T480 360"/>
+      <path d="M260 440 Q300 300 420 260"/>
+      <path d="M480 360 Q560 320 600 220"/>
+      <path d="M150 400 Q100 300 60 220"/>
+    </g>
+    <g class="bg-decor-lines c2">
+      <path d="M620 480 Q680 400 760 420"/>
+      <path d="M420 260 Q460 150 560 110"/>
+      <path d="M60 220 Q120 130 220 110"/>
+      <path d="M600 220 Q650 160 720 150"/>
+    </g>
+    <circle class="bg-decor-node c1 pulse"    cx="40"  cy="500" r="8"/>
+    <circle class="bg-decor-node c1 pulse d2" cx="260" cy="440" r="11"/>
+    <circle class="bg-decor-node c2 pulse d3" cx="480" cy="360" r="9"/>
+    <circle class="bg-decor-node c1 pulse d4" cx="420" cy="260" r="7"/>
+    <circle class="bg-decor-node c2 pulse"    cx="600" cy="220" r="8"/>
+    <circle class="bg-decor-node c3 pulse d2" cx="150" cy="400" r="6"/>
+    <circle class="bg-decor-node c1 pulse d3" cx="60"  cy="220" r="7"/>
+    <circle class="bg-decor-node c2 pulse d4" cx="220" cy="110" r="6"/>
+    <circle class="bg-decor-node c1 pulse"    cx="560" cy="110" r="7"/>
+    <circle class="bg-decor-node c3 pulse d2" cx="720" cy="150" r="6"/>
+    <circle class="bg-decor-node c2 pulse d3" cx="760" cy="420" r="8"/>
+    <circle class="bg-decor-node c1 pulse d4" cx="620" cy="480" r="6"/>
+  </svg>
+  <div class="wrap" style="max-width:520px">
+    <div class="login-card">
+      <div class="brand" style="justify-content:center;font-size:1.7rem"><span class="dot"></span>ReParole</div>
+      <h1 style="font-size:1.4rem">Code de sécurité</h1>
+      <p class="sub">Entrez le code à 6 chiffres affiché par votre application d'authentification.</p>
+      <div class="field"><label for="admin-mfa-code">Code à 6 chiffres</label><input id="admin-mfa-code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" maxlength="6" data-enter-submit="admin-mfa-validate-btn"></div>
+      <button id="admin-mfa-validate-btn" class="btn-primary" onclick="AdminPanel.submitMfaCode()">Valider</button>
+      <p class="hint" id="admin-mfa-error" role="status" aria-live="polite" style="color:var(--error)"></p>
+      <p class="hint" style="margin-top:16px"><a href="#" onclick="AdminPanel.cancelMfaChallenge();return false" style="color:var(--accent)">← Annuler et revenir à la connexion</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TABLEAU DE BORD ADMIN ============ -->
+<div id="admin-dashboard" class="screen">
+  <svg class="bg-decor bg-decor-light" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <g class="bg-decor-lines c1">
+      <path d="M40 500 Q150 400 260 440 T480 360"/>
+      <path d="M260 440 Q300 300 420 260"/>
+      <path d="M480 360 Q560 320 600 220"/>
+      <path d="M150 400 Q100 300 60 220"/>
+    </g>
+    <g class="bg-decor-lines c2">
+      <path d="M620 480 Q680 400 760 420"/>
+      <path d="M420 260 Q460 150 560 110"/>
+      <path d="M60 220 Q120 130 220 110"/>
+      <path d="M600 220 Q650 160 720 150"/>
+    </g>
+    <circle class="bg-decor-node c1 pulse"    cx="40"  cy="500" r="8"/>
+    <circle class="bg-decor-node c1 pulse d2" cx="260" cy="440" r="11"/>
+    <circle class="bg-decor-node c2 pulse d3" cx="480" cy="360" r="9"/>
+    <circle class="bg-decor-node c1 pulse d4" cx="420" cy="260" r="7"/>
+    <circle class="bg-decor-node c2 pulse"    cx="600" cy="220" r="8"/>
+    <circle class="bg-decor-node c3 pulse d2" cx="150" cy="400" r="6"/>
+    <circle class="bg-decor-node c1 pulse d3" cx="60"  cy="220" r="7"/>
+    <circle class="bg-decor-node c2 pulse d4" cx="220" cy="110" r="6"/>
+    <circle class="bg-decor-node c1 pulse"    cx="560" cy="110" r="7"/>
+    <circle class="bg-decor-node c3 pulse d2" cx="720" cy="150" r="6"/>
+    <circle class="bg-decor-node c2 pulse d3" cx="760" cy="420" r="8"/>
+    <circle class="bg-decor-node c1 pulse d4" cx="620" cy="480" r="6"/>
+  </svg>
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>ReParole — Administration</div>
+    <div class="who">
+      <button class="access-toggle" data-pref="darkMode" onclick="Prefs.toggle('darkMode')">🌙 Mode sombre</button>
+      <span id="admin-who"></span> <button class="btn-ghost" onclick="AdminPanel.logout()">Se déconnecter</button>
+    </div>
+  </div>
+  <div class="wrap">
+
+    <!-- v6.178 : cartes sur 2-3 colonnes sur grand écran (même mécanisme
+         que les autres tableaux de bord) ; 1 colonne sur téléphone. -->
+    <div class="dashboard-grid">
+    <div class="card">
+      <h3>Sécurité du compte</h3>
+      <p style="color:var(--ink-soft);font-size:.88rem;margin-bottom:12px">
+        Double authentification (code à usage unique via une application comme Google Authenticator, Authy, 1Password...).
+        Fortement recommandé pour un compte qui donne accès à des données de patients.
+      </p>
+      <p class="hint">Statut : <b id="admin-mfa-status">Vérification…</b></p>
+      <div id="admin-mfa-enroll-step1">
+        <button class="btn-primary" onclick="AdminPanel.startMfaEnroll()">Activer la double authentification</button>
+      </div>
+      <div id="admin-mfa-enroll-step2" style="display:none;margin-top:14px">
+        <p style="font-size:.88rem;color:var(--ink-soft)">1. Scannez ce code avec votre application d'authentification :</p>
+        <div id="admin-mfa-qr" style="margin:12px 0;max-width:200px"></div>
+        <p style="font-size:.85rem;color:var(--ink-soft)">Ou entrez cette clé manuellement : <code id="admin-mfa-secret" style="font-size:.8rem;word-break:break-all"></code></p>
+        <p style="font-size:.88rem;color:var(--ink-soft);margin-top:12px">2. Entrez le code à 6 chiffres affiché par l'application pour confirmer :</p>
+        <div class="field" style="margin:10px 0"><input id="admin-mfa-confirm-code" type="text" inputmode="numeric" placeholder="123456" maxlength="6"></div>
+        <button class="btn-primary" onclick="AdminPanel.confirmMfaEnroll()">Confirmer l'activation</button>
+      </div>
+      <button class="btn-ghost" id="admin-mfa-disable-btn" style="display:none;margin-top:10px" onclick="AdminPanel.disableMfa()">Désactiver la double authentification</button>
+      <p id="admin-mfa-enroll-msg" class="hint" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="card">
+      <h3>Tendances récentes (30 derniers jours, agrégées et anonymisées)</h3>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        Aucune donnée individuelle ici — uniquement des totaux sur
+        l'ensemble des patients, pour repérer où du contenu manque peut-être.
+      </p>
+      <div id="admin-trends"><p class="hint">Chargement…</p></div>
+    </div>
+
+    <div class="card">
+      <h3>📅 Connexions par jour (30 derniers jours)</h3>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        Nombre de personnes différentes connectées chaque jour —
+        aucun nom, aucun code, aucune ligne individuelle : uniquement
+        un total par jour.
+      </p>
+      <div id="admin-daily-connections"><p class="hint">Chargement…</p></div>
+    </div>
+
+    <div class="card">
+      <h3>Contributions en attente de relecture</h3>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        Rien ici n'est visible des patients. Vérifiez les sources avant
+        de valider — une phrase complète reste risquée sans relecture
+        native, même bien sourcée.
+      </p>
+      <p id="admin-queue-status" role="status" aria-live="polite" style="color:#b23b3b;font-size:.85rem"></p>
+      <div id="admin-queue"><p class="hint">Chargement…</p></div>
+    </div>
+
+    <div class="card">
+      <h3>💡 Suggestions reçues</h3>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        Boîte à idées ouverte aux patients, aidants et orthophonistes
+        (widget "Une idée, une remarque ?" sur leurs tableaux de bord
+        respectifs). Aucune réponse automatique n'est envoyée — à vous
+        de trier et, le cas échéant, de recontacter via l'email laissé.
+      </p>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="btn-ghost" style="width:auto;padding:6px 14px;font-size:.82rem" onclick="AdminPanel.setSuggestionFilter('new')">Nouvelles</button>
+        <button class="btn-ghost" style="width:auto;padding:6px 14px;font-size:.82rem" onclick="AdminPanel.setSuggestionFilter('all')">Toutes</button>
+        <button class="btn-ghost" style="width:auto;padding:6px 14px;font-size:.82rem" onclick="AdminPanel.setSuggestionFilter('archived')">Archivées</button>
+      </div>
+      <!-- v6.182 : l'IA classe et résume la boîte à idées — l'admin trie
+           et répond ; aucune réponse automatique n'est envoyée. Les emails
+           de contact ne sont pas transmis à l'IA. -->
+      <button class="btn-ghost" id="ai-triage-btn" onclick="AdminPanel.iaTriageSuggestions()">✨ Analyser les suggestions (IA)</button>
+      <div id="ai-triage-out" class="hint" style="white-space:pre-wrap;margin-top:8px"></div>
+      <div id="admin-suggestions"><p class="hint">Chargement…</p></div>
+    </div>
+
+    <div class="card">
+      <h3>🔑 Historique des connexions</h3>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        Connexions réussies des comptes admin et orthophoniste
+        uniquement (200 dernières). Les patients n'ont pas de notion
+        de "connexion" au même sens (code de suivi, pas de compte).
+      </p>
+      <!-- v6.186 : ménage — supprime les connexions de plus de 30 jours
+           (fonction SQL gatée par la table admins). -->
+      <button class="btn-ghost" id="purge-logins-btn" onclick="AdminPanel.purgeLoginEvents()">🧹 Faire le ménage (garder 30 jours)</button>
+      <p id="purge-logins-status" role="status" aria-live="polite" class="hint" style="margin-top:6px"></p>
+      <div id="admin-login-history"><p class="hint">Chargement…</p></div>
+    </div>
+
+    <div class="card">
+      <h3>⚠️ Erreurs techniques récentes</h3>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        Vraies erreurs du site (bugs, plantages) captées automatiquement
+        chez les personnes qui les rencontrent — pas les erreurs des
+        patients dans leurs exercices (voir "Tendances récentes"
+        plus haut pour celles-ci). 200 dernières, message + page +
+        détail technique.
+      </p>
+      <!-- v6.182 : l'IA regroupe les erreurs par cause probable — le
+           développeur débogue et décide. -->
+      <button class="btn-ghost" id="ai-errors-btn" onclick="AdminPanel.iaErrorsDigest()">✨ Résumer les causes probables (IA)</button>
+      <!-- v6.183 : veille AVEC recherche web — l'IA cherche les
+           publications récentes (revues, essais) sur les exercices de
+           rééducation et produit un digest sourcé. L'humain décide quoi
+           construire. -->
+      <button class="btn-ghost" id="ai-research-btn" onclick="AdminPanel.iaResearchExercises()">🔎 Veille : nouveaux exercices (IA + web)</button>
+      <div id="ai-research-out" class="hint" style="white-space:pre-wrap;margin-top:8px"></div>
+      <button class="btn-ghost" style="margin-top:6px" onclick="AdminPanel.copyResearch()">📋 Copier la veille</button>
+      <span id="ai-research-copied" class="hint"></span>
+      <div id="ai-errors-out" class="hint" style="white-space:pre-wrap;margin-top:8px"></div>
+      <div id="admin-client-errors"><p class="hint">Chargement…</p></div>
+    </div>
+    </div><!-- /.dashboard-grid -->
+
+  </div>
+</div>
+
+<script src="js/storage.js"></script>
+<script src="js/error-tracking.js"></script>
+<script src="js/prefs.js"></script>
+<script src="js/admin.js"></script>
+<script>Prefs.load();</script>
+<script src="js/enter-submit.js"></script>
+</body>
+</html>
