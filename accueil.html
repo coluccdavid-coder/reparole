@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReParole — retrouver les mots, à votre rythme</title>
+<meta name="description" content="ReParole accompagne les personnes aphasiques après un AVC : des exercices de langage doux, à la maison, entre les séances d'orthophonie. Version bêta gratuite.">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&family=Noto+Sans:wght@400;600;700&display=swap">
+<style>
+  /* Vitrine publique — v6.207. Page autonome (aucune dépendance app),
+     française uniquement pour l'instant (le choix de langue se fait dans
+     l'application, déjà traduite en 14 langues). */
+  :root{
+    --bg:#F4FAF8;--ink:#14261F;--ink-soft:#5C7268;--card:#FFFFFF;--line:#E3EDE8;--soft:#E4F3EC;
+    --primary:#0E9E77;--primary2:#0B8563;--primary-deep:#0A6B4F;--accent:#7C6BF0;
+    --warm:#DFA33A;--warm-deep:#B77A1E;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Atkinson Hyperlegible',system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.65;font-size:18px;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:'Fredoka',sans-serif;font-weight:600;line-height:1.12;color:var(--ink)}
+  a{color:inherit;text-decoration:none}
+  p{max-width:60ch}
+  .wrap{max-width:1400px;margin:0 auto;padding:0 clamp(24px,4vw,64px)}
+  :focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+  .btn{display:inline-flex;align-items:center;gap:9px;font-family:'Fredoka',sans-serif;font-weight:600;font-size:19px;padding:15px 30px;border-radius:14px;border:2.5px solid transparent;cursor:pointer;transition:transform .12s,filter .15s;min-height:56px}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;box-shadow:0 14px 26px -12px rgba(14,158,119,.6)}
+  .btn-primary:hover{filter:brightness(1.06)}
+  .btn-ghost{background:var(--card);border-color:var(--primary);color:var(--primary-deep)}
+  .btn-ghost:hover{background:var(--soft)}
+
+  .beta{position:relative;background:var(--soft);color:var(--ink-soft);text-align:center;font-size:13.5px;padding:9px 44px 9px 16px;border-bottom:1px solid var(--line)}
+  .beta b{font-family:'Fredoka';font-weight:600;color:var(--primary-deep)}
+  .beta button{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--ink-soft);font-size:15px;cursor:pointer;padding:4px;opacity:.7}
+  .beta button:hover{opacity:1}
+
+  header.nav{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;height:74px;gap:14px}
+  .brand{display:flex;align-items:center;gap:11px}
+  .brand svg{width:32px;height:38px;flex:none}
+  .brand b{font-family:'Fredoka';font-weight:600;font-size:22px;color:var(--primary-deep)}
+  nav.links{display:flex;align-items:center;gap:26px}
+  nav.links a{font-size:17px;font-weight:700;color:var(--ink-soft)}
+  nav.links a:hover{color:var(--primary-deep)}
+  .nav-cta{font-family:'Fredoka';font-weight:600;font-size:16px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;padding:11px 20px;border-radius:11px;white-space:nowrap}
+  .nav-cta:hover{filter:brightness(1.06)}
+  .burger{display:none;background:none;border:none;font-size:28px;color:var(--primary-deep);cursor:pointer;padding:6px}
+
+  .hero{background:linear-gradient(165deg,#FFFFFF 0%,#E9F7F1 100%);position:relative;overflow:hidden}
+  .blob{position:absolute;border-radius:50%;pointer-events:none;z-index:0}
+  .blob-a{width:360px;height:360px;top:-130px;right:-70px;background:radial-gradient(circle,rgba(14,158,119,.20),transparent 68%)}
+  .blob-b{width:320px;height:320px;bottom:-140px;left:-90px;background:radial-gradient(circle,rgba(124,107,240,.16),transparent 68%)}
+  .hero-in{display:grid;grid-template-columns:1.04fr .96fr;gap:clamp(44px,5vw,90px);align-items:center;padding:clamp(60px,7vh,110px) clamp(24px,4vw,64px) clamp(76px,9vh,130px);position:relative;z-index:1}
+  .eyebrow{font-family:'Fredoka';font-weight:600;font-size:15px;letter-spacing:.02em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+  .hero h1{font-size:clamp(38px,4.6vw,68px);margin-bottom:22px}
+  .hero h1 .grad{background:linear-gradient(100deg,var(--primary),var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .lead{font-size:clamp(19px,1.4vw,23px);color:#47564e;margin-bottom:14px}
+  .note{display:flex;align-items:center;gap:11px;font-size:16px;color:var(--ink-soft);background:rgba(255,255,255,.8);border:1px solid var(--line);border-radius:12px;padding:13px 16px;margin:24px 0 28px;max-width:52ch}
+  .note svg{flex:none}
+  .cta{display:flex;gap:14px;flex-wrap:wrap}
+
+  .owl-stage{position:relative;justify-self:center;width:min(560px,90vw);min-height:clamp(440px,52vh,560px);display:flex;align-items:center;justify-content:center}
+  .halo{position:absolute;width:82%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#BDF0DC 0%,#E1F6EE 40%,transparent 72%)}
+  .owl{position:relative;z-index:1;width:min(380px,64vw);height:auto;animation:float 5.6s ease-in-out infinite;transform-origin:50% 92%;filter:drop-shadow(0 22px 26px rgba(60,40,16,.25))}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  .pill{position:absolute;z-index:2;font-family:'Fredoka';font-weight:600;font-size:15px;padding:8px 16px;border-radius:999px;box-shadow:0 12px 24px -12px rgba(28,62,51,.35);animation:floatp 4.6s ease-in-out infinite}
+  .p1{top:6%;left:0;background:#DCF2E8;color:var(--primary-deep)}
+  .p2{top:24%;right:0;background:#ECE7FB;color:#5B49C9;animation-delay:.7s}
+  .p3{bottom:22%;left:-2%;background:#FBF1DC;color:var(--warm-deep);animation-delay:1.4s}
+  @keyframes floatp{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  .bubble{position:absolute;bottom:2%;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--line);border-radius:16px;padding:11px 18px;font-size:17px;color:#2f4a3c;box-shadow:0 14px 30px -16px rgba(28,62,51,.4);text-align:center;max-width:86%}
+  .bubble .nm{font-family:'Fredoka';font-weight:600;font-size:13px;color:var(--ink-soft);display:block}
+
+  section.block{padding:72px 0}
+  .sec-head{max-width:640px;margin-bottom:38px}
+  .sec-head h2{font-size:clamp(28px,4vw,40px);margin-bottom:12px}
+  .sec-head p{font-size:19px;color:var(--ink-soft)}
+
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px}
+  .card h3{font-size:20px;margin-bottom:6px}
+  .card p{font-size:16.5px;color:var(--ink-soft)}
+  .card a{display:inline-block;margin-top:12px;font-family:'Fredoka';font-weight:600;color:var(--primary-deep);font-size:16px}
+  .ic{width:58px;height:58px;border-radius:17px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;box-shadow:0 10px 20px -10px rgba(28,62,51,.25)}
+  .ic svg{width:34px;height:34px;display:block}
+
+  .benefits{background:var(--card);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .benefits .card{background:linear-gradient(160deg,#FBFDF9,#F0F7F2)}
+
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;counter-reset:step}
+  .step{position:relative;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px 24px}
+  .step::before{counter-increment:step;content:counter(step);position:absolute;top:-18px;left:24px;width:44px;height:44px;background:linear-gradient(145deg,var(--primary),var(--primary2));color:#fff;font-family:'Fredoka';font-weight:600;font-size:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 18px -8px rgba(14,158,119,.7)}
+  .step h3{font-size:20px;margin:14px 0 8px}
+  .step p{font-size:16.5px;color:var(--ink-soft)}
+
+  .trust{background:linear-gradient(165deg,#0A6B4F,#0A2A24);color:#EAF6F1}
+  .trust .sec-head h2{color:#fff}
+  .trust .sec-head p{color:#BFD6CC}
+  .trust .card{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15)}
+  .trust .card h3{color:#fff}
+  .trust .card p{color:#C6DBD1}
+
+  .final{text-align:center;padding:78px 24px}
+  .final h2{font-size:clamp(28px,4vw,42px);margin-bottom:14px}
+  .final p{font-size:20px;color:var(--ink-soft);margin:0 auto 28px}
+  .final .cta{justify-content:center}
+
+  footer{background:var(--card);border-top:1px solid var(--line);padding:42px 0 28px}
+  .foot-top{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap;margin-bottom:24px}
+  .foot-links{display:flex;gap:24px;flex-wrap:wrap}
+  .foot-links a{font-weight:700;color:var(--ink-soft);font-size:16px}
+  .foot-links a:hover{color:var(--primary-deep)}
+  .foot-bottom{border-top:1px solid var(--line);padding-top:16px;font-size:14.5px;color:var(--ink-soft);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+  @media (max-width:860px){
+    .hero-in{grid-template-columns:1fr;gap:28px;text-align:center;padding-top:44px}
+    .note{margin-inline:auto}
+    .cta{justify-content:center}
+    .owl-stage{order:-1;min-height:380px}
+    .p3{display:none}
+    nav.links{display:none}
+    .burger{display:block}
+    .grid3,.steps{grid-template-columns:1fr}
+    .step{margin-top:12px}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<div class="beta" id="beta">🌱 <b>Version bêta</b> — ReParole est en construction, et gratuite pendant toute la phase de test.<button aria-label="Fermer" onclick="document.getElementById('beta').remove()">✕</button></div>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top" aria-label="ReParole, accueil">
+      <svg viewBox="0 0 100 120" aria-hidden="true"><path d="M33 22 L26 4 L45 17 Z" fill="#6E4A2A"/><path d="M67 22 L74 4 L55 17 Z" fill="#6E4A2A"/><path d="M50 14 C27 14 19 35 19 59 C19 85 34 101 50 101 C66 101 81 85 81 59 C81 35 73 14 50 14Z" fill="#9A6B3F"/><ellipse cx="50" cy="70" rx="18" ry="21" fill="#F6EAD2"/><circle cx="37" cy="45" r="10" fill="#fff"/><circle cx="63" cy="45" r="10" fill="#fff"/><circle cx="37" cy="46" r="6" fill="#1d2521"/><circle cx="63" cy="46" r="6" fill="#1d2521"/><path d="M50 51 L45.5 56 Q50 63 54.5 56 Z" fill="#E8973A"/></svg>
+      <b>ReParole</b>
+    </a>
+    <nav class="links" aria-label="Navigation principale">
+      <a href="#pour-qui">Pour qui</a>
+      <a href="#pense-pour">Ce que ça fait</a>
+      <a href="#comment">Comment ça marche</a>
+      <a href="#confiance">Vos données</a>
+    </nav>
+    <a class="nav-cta" href="index.html#connexion">Entrer dans ReParole</a>
+    <button class="burger" aria-label="Ouvrir le menu">&#9776;</button>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <span class="blob blob-a" aria-hidden="true"></span>
+    <span class="blob blob-b" aria-hidden="true"></span>
+    <div class="wrap hero-in">
+      <div>
+        <div class="eyebrow">Rééducation du langage après un AVC</div>
+        <h1>Retrouver les mots,<br><span class="grad">un jour après l'autre.</span></h1>
+        <p class="lead">ReParole vous accompagne à la maison, entre les séances d'orthophonie, avec des exercices doux et un compagnon bienveillant.</p>
+        <div class="note">
+          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#0E9E77"/><path d="M8 12.2l2.6 2.6L16 9.4" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>C'est un entraînement, à votre rythme — <strong>il ne remplace pas votre orthophoniste</strong>.</span>
+        </div>
+        <div class="cta">
+          <a class="btn btn-primary" href="index.html?nouveau=1">Je commence &rarr;</a>
+          <a class="btn btn-ghost" href="index.html">Me connecter</a>
+        </div>
+        <p style="margin-top:14px;font-size:15.5px;color:var(--ink-soft)">Une seule porte : juste après, vous créez votre espace <em>ou</em> vous vous connectez avec votre clé.</p>
+      </div>
+      <div class="owl-stage">
+        <div class="halo" aria-hidden="true"></div>
+        <span class="pill p1" aria-hidden="true">bonjour</span>
+        <span class="pill p2" aria-hidden="true">merci</span>
+        <span class="pill p3" aria-hidden="true">la maison</span>
+        <svg class="owl" viewBox="0 0 100 120" role="img" aria-label="Ami, le compagnon hibou de ReParole">
+          <defs>
+            <linearGradient id="ob" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B58152"/><stop offset="1" stop-color="#875A34"/></linearGradient>
+            <linearGradient id="ov" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F8EFD9"/><stop offset="1" stop-color="#EAD9B6"/></linearGradient>
+          </defs>
+          <path d="M33 22 L26 3 L45 17 Z" fill="#6E4A2A"/><path d="M67 22 L74 3 L55 17 Z" fill="#6E4A2A"/>
+          <path d="M50 13 C26 13 18 35 18 59 C18 86 34 102 50 102 C66 102 82 86 82 59 C82 35 74 13 50 13Z" fill="url(#ob)"/>
+          <path d="M18 59 C18 44 22 30 30 21 C24 33 23 47 24 60 C25 78 34 92 45 98 C33 96 18 82 18 59Z" fill="#734B29" opacity=".35"/>
+          <ellipse cx="50" cy="71" rx="19" ry="22" fill="url(#ov)"/>
+          <circle cx="37" cy="44" r="17" fill="#F8EFD9" stroke="#CBA878" stroke-width="1.5"/>
+          <circle cx="63" cy="44" r="17" fill="#F8EFD9" stroke="#CBA878" stroke-width="1.5"/>
+          <ellipse cx="30" cy="55" rx="4.5" ry="3" fill="#E7A98F" opacity=".65"/>
+          <ellipse cx="70" cy="55" rx="4.5" ry="3" fill="#E7A98F" opacity=".65"/>
+          <circle cx="37" cy="44" r="11.5" fill="#fff"/><circle cx="63" cy="44" r="11.5" fill="#fff"/>
+          <circle cx="37" cy="45" r="7" fill="#1d2521"/><circle cx="63" cy="45" r="7" fill="#1d2521"/>
+          <circle cx="40" cy="42" r="2.3" fill="#fff"/><circle cx="66" cy="42" r="2.3" fill="#fff"/>
+          <path d="M50 50 L44.5 56 Q50 65 55.5 56 Z" fill="#EE9A34"/>
+          <path d="M40 100 l-5 9 M42 101 l0 10 M44 100 l5 9" stroke="#EE9A34" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <path d="M60 100 l-5 9 M58 101 l0 10 M56 100 l5 9" stroke="#EE9A34" stroke-width="3" stroke-linecap="round" fill="none"/>
+        </svg>
+        <div class="bubble"><span class="nm">Ami</span>Je vais vous accompagner.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="pour-qui">
+    <div class="wrap">
+      <div class="sec-head"><h2>Pour qui ?</h2><p>Trois espaces, une même douceur.</p></div>
+      <div class="grid3">
+        <div class="card">
+          <div class="ic" style="background:linear-gradient(145deg,#EDF6F0,#D8ECE0)"><svg viewBox="0 0 48 48"><defs><linearGradient id="i1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#18B487"/><stop offset="1" stop-color="#0A6B4F"/></linearGradient></defs><path d="M11 9h26a5 5 0 0 1 5 5v14a5 5 0 0 1-5 5H22l-8 6.5V33h-3a5 5 0 0 1-5-5V14a5 5 0 0 1 5-5z" fill="url(#i1)"/><circle cx="17" cy="21" r="2.6" fill="#EAF7F0"/><circle cx="24" cy="21" r="2.6" fill="#EAF7F0"/><circle cx="31" cy="21" r="2.6" fill="#EAF7F0"/></svg></div>
+          <h3>Vous, après un AVC</h3>
+          <p>Des exercices pour réentraîner le langage, à votre rythme, sans jugement.</p>
+          <a href="index.html?nouveau=1">Je commence &rarr;</a>
+        </div>
+        <div class="card">
+          <div class="ic" style="background:linear-gradient(145deg,#FDEEE8,#F8DBD0)"><svg viewBox="0 0 48 48"><defs><linearGradient id="i2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2A07F"/><stop offset="1" stop-color="#E0603F"/></linearGradient></defs><path d="M24 40C11 32 6 25 6 17.5 6 12.3 10 8 15.3 8c3.5 0 6.7 1.9 8.7 4.9C26 9.9 29.2 8 32.7 8 38 8 42 12.3 42 17.5 42 25 37 32 24 40z" fill="url(#i2)"/></svg></div>
+          <h3>Vous, un proche aidant</h3>
+          <p>Suivre les progrès, ajouter des photos du quotidien, accompagner sans pression.</p>
+          <a href="aidant.html">Espace aidant &rarr;</a>
+        </div>
+        <div class="card">
+          <div class="ic" style="background:linear-gradient(145deg,#E4F3F2,#CDE8E7)"><svg viewBox="0 0 48 48"><defs><linearGradient id="i3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3FA6A6"/><stop offset="1" stop-color="#0B5E74"/></linearGradient></defs><rect x="11" y="9" width="26" height="32" rx="5" fill="url(#i3)"/><rect x="17" y="6" width="14" height="8" rx="4" fill="#0B5E74"/><path d="M16.5 26l4.5 4.5L31 20.5" fill="none" stroke="#EAF7F6" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h3>Vous, orthophoniste</h3>
+          <p>Un complément entre les séances, et un suivi de l'activité de vos patients.</p>
+          <a href="dashboard-ortho.html">Espace pro &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block benefits" id="pense-pour">
+    <div class="wrap">
+      <div class="sec-head"><h2>Pensé pour l'aphasie, pas contre elle</h2><p>Chaque détail est là pour rendre l'entraînement possible et agréable.</p></div>
+      <div class="grid3">
+        <div class="card"><div class="ic" style="background:linear-gradient(145deg,#FDF3DE,#F8E4C0)"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" fill="#DFA33A"/><circle cx="24" cy="24" r="13" fill="#FDF3DE"/><path d="M24 24V15M24 24l7 3.5" fill="none" stroke="#B77A1E" stroke-width="3" stroke-linecap="round"/></svg></div><h3>À votre rythme</h3><p>Pas de chrono, pas de note rouge. Des séances courtes quand la fatigue est là.</p></div>
+        <div class="card"><div class="ic" style="background:linear-gradient(145deg,#F1ECF8,#E1D7F0)"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" fill="#7C6BF0"/><circle cx="24" cy="14.5" r="3.6" fill="#fff"/><path d="M13.5 20c3.2 1.6 6.8 2.4 10.5 2.4S31.3 21.6 34.5 20M24 21.5V31l-5 8.5M24 31l5 8.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Accessible</h3><p>Gros boutons, lecture facilitée, mode sombre, usage à une main. Vous réglez votre confort.</p></div>
+        <div class="card"><div class="ic" style="background:linear-gradient(145deg,#FDF3DE,#F5E2BE)"><svg viewBox="0 0 48 48"><path d="M15 11l3.5 6M33 11l-3.5 6" stroke="#6E4A2A" stroke-width="3.4" stroke-linecap="round" fill="none"/><path d="M24 7c-9.2 0-14.5 7-14.5 15.5S15.5 39 24 39s14.5-8 14.5-16.5S33.2 7 24 7z" fill="#9A6B3F"/><ellipse cx="24" cy="28" rx="8" ry="9" fill="#F8EFD9"/><circle cx="18.5" cy="21" r="6.6" fill="#F8EFD9"/><circle cx="29.5" cy="21" r="6.6" fill="#F8EFD9"/><circle cx="18.5" cy="21.5" r="3.1" fill="#1D2521"/><circle cx="29.5" cy="21.5" r="3.1" fill="#1D2521"/><path d="M24 24l-2.6 3.2h5.2z" fill="#EE9A34"/></svg></div><h3>Un compagnon, Ami</h3><p>Il explique, encourage, et propose une pause quand il le faut — jamais il ne juge.</p></div>
+        <div class="card"><div class="ic" style="background:linear-gradient(145deg,#E4F3F2,#CDE8E7)"><svg viewBox="0 0 48 48"><rect x="6" y="14" width="36" height="24" rx="6" fill="#2E8B8B"/><path d="M17.5 14l2.2-3.6h8.6L30.5 14z" fill="#2E8B8B"/><circle cx="24" cy="26" r="7.5" fill="#DCEFEE"/><circle cx="24" cy="26" r="3.6" fill="#2E8B8B"/><circle cx="35.5" cy="20" r="1.9" fill="#EAF7F6"/></svg></div><h3>Votre quotidien</h3><p>Une photo d'un objet, d'un lieu, d'un visage devient un exercice qui vous ressemble.</p></div>
+        <div class="card"><div class="ic" style="background:linear-gradient(145deg,#EDF6F0,#D8ECE0)"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="18" fill="#0E9E77"/><path d="M6 24h36" stroke="#CDE6D8" stroke-width="2.4" fill="none"/><path d="M24 6v36" stroke="#CDE6D8" stroke-width="2.4" fill="none"/><ellipse cx="24" cy="24" rx="8" ry="18" fill="none" stroke="#CDE6D8" stroke-width="2.4"/></svg></div><h3>14 langues</h3><p>Pour s'entraîner dans la langue du cœur, pas seulement en français.</p></div>
+        <div class="card"><div class="ic" style="background:linear-gradient(145deg,#F1ECF8,#E1D7F0)"><svg viewBox="0 0 48 48"><path d="M10.5 27a7 7 0 0 1 0-9.9l4-4a7 7 0 0 1 9.9 0" fill="none" stroke="#7C6BF0" stroke-width="4" stroke-linecap="round"/><path d="M37.5 21a7 7 0 0 1 0 9.9l-4 4a7 7 0 0 1-9.9 0" fill="none" stroke="#7C6BF0" stroke-width="4" stroke-linecap="round"/><path d="M19 29l10-10" stroke="#7C6BF0" stroke-width="4" stroke-linecap="round"/></svg></div><h3>Un complément</h3><p>ReParole vient entre les séances. Il n'a jamais vocation à remplacer le soin.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="comment">
+    <div class="wrap">
+      <div class="sec-head"><h2>Comment ça marche</h2><p>Trois pas, et vous êtes lancé&middot;e.</p></div>
+      <div class="steps">
+        <div class="step"><h3>Je commence</h3><p>Vous créez votre espace en un instant, avec votre prénom. Aucune donnée compliquée.</p></div>
+        <div class="step"><h3>Une séance, guidée</h3><p>Ami vous propose une courte séance adaptée à votre niveau du jour.</p></div>
+        <div class="step"><h3>Je garde ma clé</h3><p>Une clé personnelle vous permet de retrouver votre progression à chaque visite.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block trust" id="confiance">
+    <div class="wrap">
+      <div class="sec-head"><h2>Vos données, en confiance</h2><p>On préfère vous dire les choses clairement.</p></div>
+      <div class="grid3">
+        <div class="card"><h3>Le minimum</h3><p>Pendant le test, ReParole ne demande qu'un prénom et une clé — rien de médical n'est exigé.</p></div>
+        <div class="card"><h3>Un hébergement de santé</h3><p>La version finale sera hébergée sur une infrastructure certifiée pour les données de santé (HDS).</p></div>
+        <div class="card"><h3>Jamais un diagnostic</h3><p>ReParole n'établit aucun diagnostic et ne remplace ni l'orthophoniste ni le suivi médical.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap">
+      <h2>Prêt&middot;e à retrouver les mots ?</h2>
+      <p>Commencez maintenant — c'est gratuit pendant toute la phase de test.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="index.html?nouveau=1">Je commence &rarr;</a>
+          <a class="btn btn-ghost" href="index.html">Me connecter</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="brand">
+        <svg viewBox="0 0 100 120" style="width:30px;height:36px" aria-hidden="true"><path d="M33 22 L26 4 L45 17 Z" fill="#6E4A2A"/><path d="M67 22 L74 4 L55 17 Z" fill="#6E4A2A"/><path d="M50 14 C27 14 19 35 19 59 C19 85 34 101 50 101 C66 101 81 85 81 59 C81 35 73 14 50 14Z" fill="#9A6B3F"/><ellipse cx="50" cy="70" rx="18" ry="21" fill="#F6EAD2"/><circle cx="37" cy="45" r="10" fill="#fff"/><circle cx="63" cy="45" r="10" fill="#fff"/><circle cx="37" cy="46" r="6" fill="#1d2521"/><circle cx="63" cy="46" r="6" fill="#1d2521"/><path d="M50 51 L45.5 56 Q50 63 54.5 56 Z" fill="#E8973A"/></svg>
+        <b style="font-family:'Fredoka';font-weight:600;font-size:20px;color:var(--primary-deep)">ReParole</b>
+      </div>
+      <div class="foot-links">
+        <a href="mentions-legales.html">Mentions légales</a>
+        <a href="confidentialite.html">Confidentialité</a>
+        <a href="cgu.html">Conditions d'utilisation</a>
+        <a href="politique-cookies.html">Cookies</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>&copy; 2026 ReParole — un outil pour s'entraîner au langage après un AVC.</span>
+      <span>Version bêta &middot; ne remplace pas un suivi orthophonique.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+"use strict";
+(function(){
+  var b=document.querySelector('.burger'), links=document.querySelector('nav.links');
+  if(!b||!links) return;
+  b.addEventListener('click',function(){
+    var open=links.style.display==='flex';
+    links.style.cssText=open?'':'display:flex;position:absolute;flex-direction:column;top:74px;right:16px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 22px;gap:14px;box-shadow:0 20px 40px -20px rgba(0,0,0,.3);z-index:60';
+  });
+})();
+</script>
+</body>
+</html>
