@@ -1,0 +1,211 @@
+/* =====================================================================
+   COMPAGNON ANIMÉ "AMI" — styles (v6.15)
+   Pas de dépendance externe : SVG + CSS pur, cohérent avec la palette
+   existante (variables --accent / --accent-soft / --warm de style.css).
+   v6.15 : les animations des jambes/yeux/éclat sont maintenant en SVG
+   natif (animateTransform/animate, générées dans js/companion.js), pas
+   en CSS — voir le commentaire dans companion.js pour le détail. Ce
+   fichier ne gère plus que le flottement du corps entier (translateY
+   pur, fiable en CSS classique) et l'entrée en scène.
+===================================================================== */
+
+.companion-widget{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:14px 0;
+}
+
+/* Conteneur qui joue l'animation d'entrée (glisse + apparaît). */
+.companion-enter{
+  display:inline-flex;
+  animation: companion-slide-in .5s ease-out;
+}
+
+.companion-svg{
+  flex-shrink:0;
+  overflow:visible;
+}
+
+/* v6.15 : la classe "companion-animated" n'est ajoutée par le JS que si
+   ni "réduire les animations" (système) ni le mode lecture facilitée ne
+   sont actifs — donc pas besoin de dupliquer cette logique ici en CSS. */
+.companion-svg.companion-animated{
+  animation: companion-bob 2.4s ease-in-out infinite;
+}
+.companion-svg.companion-animated.mood-delighted{
+  animation: companion-bob-big 1.1s ease-in-out infinite;
+}
+
+.companion-textwrap{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  flex:1;
+}
+
+.companion-name{
+  font-family:'Source Sans 3',sans-serif;
+  font-size:.8rem;
+  font-weight:600;
+  color:var(--accent-dark);
+  
+  
+}
+
+/* v6.9.1 : couleurs définies ici en CSS (et non en attribut fill="var(...)"
+   dans le SVG) — c'est la correction du bug "Ami invisible" : les
+   attributs de présentation SVG ne résolvent pas var() de façon fiable
+   sur tous les navigateurs, en particulier Safari/iOS. */
+.companion-body{ fill:url(#ami-owl-body); }  /* v6.200 : plumage brun du hibou (dégradé défini dans le SVG) */
+.companion-belly{ fill:#F6EAD2; opacity:.92; }  /* v6.200 : poitrail crème */
+.companion-eye{ fill:#1d2521; }
+.companion-mouth{ fill:none; stroke:#1d2521; stroke-width:3; stroke-linecap:round; }
+.companion-mouth-open{ fill:#1d2521; }
+.companion-spark{ fill:var(--warm); }
+.companion-leg{ fill:none; stroke:#E8973A; stroke-width:2.6; stroke-linecap:round; }  /* v6.203 : serres (traits ambre) */
+.companion-arm{ fill:#7A5233; }  /* v6.200 : ailes */
+.companion-ear{ fill:#8C5E37; }  /* v6.200 : aigrettes */
+.companion-disc{ fill:#F6EAD2; stroke:#C9A878; stroke-width:1.2; }  /* v6.203 : disques du visage cerclés */
+.companion-beak{ fill:var(--warm); }  /* v6.200 : bec ambre */
+.companion-arm-wave{
+  animation:companion-wave-arm .6s ease-in-out infinite;
+  transform-origin:center;
+}
+@keyframes companion-wave-arm{ 0%,100%{ rotate:-8deg; } 50%{ rotate:8deg; } }
+
+/* v6.65 : accessoires des 10 nouvelles expressions demandées par
+   l'utilisateur — un seul accessoire actif à la fois (voir la fonction
+   svg() dans js/companion.js), toujours dans la même famille de
+   couleurs que le reste d'Ami (accent/warm), jamais de nouvelle
+   couleur "hors marque" ajoutée juste pour une expression. */
+.companion-thinking circle{ fill:var(--warm-soft); animation:companion-float 2.6s ease-in-out infinite; }
+.companion-thinking circle:nth-child(2){ animation-delay:.3s; }
+.companion-thinking circle:nth-child(3){ animation-delay:.6s; }
+.companion-zzz{
+  fill:var(--accent-soft);
+  font-family:'Source Sans 3',sans-serif;
+  font-weight:700;
+  font-size:10px;
+  animation:companion-float 3s ease-in-out infinite;
+}
+.companion-zzz-sm{ font-size:7px; animation-delay:.4s; }
+.companion-heart{ fill:var(--warm); animation:companion-heartbeat 1.6s ease-in-out infinite; transform-origin:78px 15px; }
+.companion-confetti circle{ animation:companion-float 1.8s ease-in-out infinite; }
+.companion-confetti .c1{ fill:var(--warm); }
+.companion-confetti .c2{ fill:var(--accent); animation-delay:.25s; }
+.companion-confetti .c3{ fill:var(--accent-dark); animation-delay:.5s; }
+.companion-soundwave path{
+  fill:none;
+  stroke:var(--accent-soft);
+  stroke-width:2.4;
+  stroke-linecap:round;
+  animation:companion-wave 1.6s ease-in-out infinite;
+}
+.companion-soundwave path:last-child{ animation-delay:.25s; }
+
+@keyframes companion-float{ 0%,100%{ transform:translateY(0); opacity:.85; } 50%{ transform:translateY(-4px); opacity:1; } }
+@keyframes companion-heartbeat{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.15); } }
+@keyframes companion-wave{ 0%,100%{ opacity:.4; } 50%{ opacity:1; } }
+
+/* v6.12 : la bulle ressemblait trop à un champ de saisie (même fond
+   blanc, même bordure fine, mêmes coins arrondis que .field input dans
+   style.css) — un patient a essayé d'y écrire. Corrigé : fond teinté
+   distinct, pas de bordure grise, petite pointe qui désigne Ami comme
+   une vraie bulle de bande dessinée, et texte non sélectionnable pour
+   ne plus ressembler à un champ éditable. */
+.companion-bubble{
+  position:relative;
+  background:var(--accent-soft);
+  border:none;
+  border-radius:14px;
+  padding:10px 14px;
+  font-size:.95rem;
+  font-family:'Source Sans 3',sans-serif;
+  font-style:italic;
+  font-weight:400;
+  color:var(--ink);
+  box-shadow:none;
+  min-height:1.3em;
+  flex:1;
+  cursor:default;
+  
+  
+  user-select:none;
+}
+.companion-bubble::before{
+  content:'';
+  position:absolute;
+  left:-7px;
+  top:16px;
+  width:14px;
+  height:14px;
+  background:var(--accent-soft);
+  clip-path:polygon(100% 0, 100% 100%, 0 50%);
+}
+/* v6.52 : accent chaleureux quand Ami félicite une série de jours
+   (mood "delighted", voir js/companion.js) — même bulle, juste un ton
+   différent pour marquer un moment à célébrer. */
+.companion-bubble-celebrate{ background:var(--warm-soft); }
+.companion-bubble-celebrate::before{ background:var(--warm-soft); }
+
+@keyframes companion-slide-in{
+  from{ transform:translateX(-22px); opacity:0; }
+  to  { transform:translateX(0);     opacity:1; }
+}
+
+/* v6.34 : entrée "Ami arrive sur l'exercice pour expliquer" — glissement
+   plus long et plus lent que l'entrée par défaut (companion-slide-in),
+   pour donner l'impression qu'il vient de plus loin exprès pour être
+   là. Utilisée uniquement via svg(mood,{arriving:true}) — voir
+   companion.js. */
+.companion-enter-explain{
+  display:inline-flex;
+  animation: companion-slide-in-explain .85s cubic-bezier(.22,.8,.28,1);
+}
+@keyframes companion-slide-in-explain{
+  from{ transform:translateX(-64px); opacity:0; }
+  to  { transform:translateX(0);      opacity:1; }
+}
+
+/* v6.34 : la bulle de texte n'apparaît qu'une fois qu'Ami a fini
+   d'arriver — évite d'afficher l'explication avant même qu'il soit en
+   place. Le délai (.6s) correspond à peu près à la durée de
+   companion-slide-in-explain ci-dessus. */
+.companion-bubble-delayed{
+  opacity:0;
+  animation: companion-bubble-fade .35s ease-out forwards;
+  animation-delay:.6s;
+}
+@keyframes companion-bubble-fade{
+  from{ opacity:0; }
+  to  { opacity:1; }
+}
+
+@keyframes companion-bob{
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+
+@keyframes companion-bob-big{
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-9px) rotate(2deg); }
+}
+
+/* Respecte les préférences d'accessibilité pour l'entrée en scène (HTML,
+   pas SVG) — le reste (jambes/yeux/éclat) est déjà géré côté JS. */
+@media (prefers-reduced-motion: reduce){
+  .companion-enter, .companion-svg, .companion-enter-explain, .companion-bubble-delayed{ animation:none; opacity:1; }
+  .companion-thinking circle, .companion-zzz, .companion-heart, .companion-confetti circle, .companion-soundwave path{ animation:none; opacity:.9; transform:none; }
+  .companion-arm-wave{ animation:none; rotate:0deg; }
+}
+body.dys .companion-enter, body.dys .companion-svg, body.dys .companion-enter-explain, body.dys .companion-bubble-delayed{
+  animation:none; opacity:1; /* mode lecture facilitée : on limite les distractions visuelles */
+}
+body.dys .companion-thinking circle, body.dys .companion-zzz, body.dys .companion-heart, body.dys .companion-confetti circle, body.dys .companion-soundwave path{
+  animation:none; opacity:.9; transform:none;
+}
+body.dys .companion-arm-wave{ animation:none; rotate:0deg; }
+
+/* v6.202 : hibou de l'écran d'accueil — avatar seul, centré. */
+.companion-login-avatar{ justify-content:center; margin:2px 0 10px; }
