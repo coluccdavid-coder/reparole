@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReParole — Politique de confidentialité</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2F6B57">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&family=Noto+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrap" style="max-width:760px">
+  <div class="login-card" style="text-align:left;margin-top:40px">
+    <div class="brand" style="justify-content:center;font-size:1.7rem"><span class="dot"></span>ReParole</div>
+    <a href="index.html" class="btn-ghost" style="display:block;width:100%;margin:14px 0;text-align:center;text-decoration:none">← Revenir à mon espace</a>
+    <h1 style="font-size:1.5rem;text-align:center">Politique de confidentialité</h1>
+    <p class="hint" style="text-align:center;margin-top:6px">Version bêta en cours de construction — ce document reste à faire valider par un∙e juriste avant tout usage avec de vraies personnes.</p>
+
+    <h2 style="font-size:1.1rem;margin-top:24px">Quelles données sont collectées</h2>
+    <p class="hint" style="margin-top:6px">
+      Selon l'espace utilisé :
+    </p>
+    <ul class="hint" style="margin-top:6px;padding-left:20px;line-height:1.6">
+      <li><b>Patient</b> : prénom, résultats d'exercices, catégories d'erreurs détectées automatiquement, profil clinique éventuellement déclaré par l'orthophoniste, notes de journal libre, photos personnelles ajoutées volontairement, email (uniquement si les rappels sont activés).</li>
+      <li><b>Orthophoniste</b> : email, nom, mot de passe (jamais stocké en clair — géré par Supabase Auth), les données des patients qu'il/elle a explicitement rattachés.</li>
+      <li><b>Aidant∙e</b> : rien n'est demandé — l'accès se fait via un code fourni par le patient, en lecture seule.</li>
+    </ul>
+
+    <h2 style="font-size:1.1rem;margin-top:20px">Pourquoi ces données sont collectées</h2>
+    <p class="hint" style="margin-top:6px">
+      Uniquement pour personnaliser les exercices de rééducation et permettre
+      le suivi par un∙e orthophoniste. Aucune donnée n'est vendue, louée, ou
+      utilisée à des fins publicitaires. Il n'y a pas de tracking publicitaire
+      ni d'outil d'analyse d'audience tiers sur ce site.
+    </p>
+
+    <h2 style="font-size:1.1rem;margin-top:20px">Combien de temps elles sont conservées</h2>
+    <p class="hint" style="margin-top:6px">
+      <b>[Durée à définir — à compléter]</b>. Ce point n'est pas encore
+      tranché (voir <code>RGPD.md</code> dans le dépôt du projet) — aucune
+      suppression automatique n'existe à ce jour au-delà de la suppression
+      volontaire décrite ci-dessous.
+    </p>
+
+    <h2 style="font-size:1.1rem;margin-top:20px">Où elles sont hébergées</h2>
+    <p class="hint" style="margin-top:6px">
+      Les fichiers du site sont hébergés par <b>GitHub Pages</b>. Les
+      données (comptes, résultats d'exercices) sont hébergées par
+      <b>Supabase Inc.</b>, qui agit comme sous-traitant au sens du RGPD.
+      <b>[Certification HDS (Hébergeur de Données de Santé) : à vérifier
+      avant tout usage réel avec de vrais patients — voir
+      <code>HEBERGEMENT.md</code>]</b>.
+    </p>
+
+    <h2 style="font-size:1.1rem;margin-top:20px">Vos droits</h2>
+    <p class="hint" style="margin-top:6px">
+      Conformément au RGPD (et, le cas échéant, à toute loi équivalente
+      applicable selon votre pays de résidence), vous disposez d'un droit
+      d'accès, de rectification, d'effacement et de portabilité de vos
+      données, ainsi que du droit de retirer votre consentement à tout
+      moment.
+    </p>
+    <p class="hint" style="margin-top:8px">
+      Pour un compte <b>patient</b>, ces deux droits sont directement
+      exerçables depuis votre tableau de bord :
+    </p>
+    <ul class="hint" style="margin-top:6px;padding-left:20px;line-height:1.6">
+      <li><b>📥 Télécharger mes données</b> — export complet au format JSON (portabilité).</li>
+      <li><b>🗑️ Supprimer mon compte</b> — suppression immédiate et définitive de toutes vos données.</li>
+    </ul>
+    <p class="hint" style="margin-top:8px">
+      Pour toute autre demande, ou pour un compte orthophoniste :
+      <b>[email de contact — à compléter]</b>.
+    </p>
+    <p class="hint" style="margin-top:8px">
+      Vous pouvez également introduire une réclamation auprès de la CNIL
+      (<a href="https://www.cnil.fr" target="_blank" rel="noopener">www.cnil.fr</a>).
+    </p>
+
+    <h2 style="font-size:1.1rem;margin-top:20px">Qui peut voir vos données</h2>
+    <p class="hint" style="margin-top:6px">
+      Uniquement vous, et l'orthophoniste que vous avez explicitement
+      rattaché à votre compte (le cas échéant). Un∙e aidant∙e à qui vous
+      donnez un code n'a accès qu'en lecture seule, jamais à des données
+      cliniques détaillées. Personne d'autre — les règles d'accès sont
+      appliquées directement au niveau de la base de données (RLS), pas
+      seulement dans l'interface.
+    </p>
+
+    <h2 style="font-size:1.1rem;margin-top:20px">Contact</h2>
+    <p class="hint" style="margin-top:6px">
+      Pour toute question relative à vos données personnelles :
+      <b>[email de contact — à compléter]</b>.
+    </p>
+
+    <p class="hint" style="margin-top:24px;font-size:.75rem">
+      Dernière mise à jour : <b>[date — à compléter]</b>.
+    </p>
+  </div>
+</div>
+</body>
+</html>
