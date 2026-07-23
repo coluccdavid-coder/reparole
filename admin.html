@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<!-- v6.79 : préconnexion à Supabase — accélère la toute première requête API (DNS + TLS déjà négociés avant le premier appel réel) -->
+<link rel="preconnect" href="https://bwxlshedzpfaeszwktdx.supabase.co" crossorigin>
+<link rel="dns-prefetch" href="https://bwxlshedzpfaeszwktdx.supabase.co">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReParole — Administration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&family=Noto+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/ortho.css">
+</head>
+<body>
+
+<!-- ============ CONNEXION ============ -->
+<div id="admin-login" class="screen active">
+  <svg class="bg-decor" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <g class="bg-decor-lines c1">
+      <path d="M40 500 Q150 400 260 440 T480 360"/>
+      <path d="M260 440 Q300 300 420 260"/>
+      <path d="M480 360 Q560 320 600 220"/>
+      <path d="M150 400 Q100 300 60 220"/>
+    </g>
+    <g class="bg-decor-lines c2">
+      <path d="M620 480 Q680 400 760 420"/>
+      <path d="M420 260 Q460 150 560 110"/>
+      <path d="M60 220 Q120 130 220 110"/>
+      <path d="M600 220 Q650 160 720 150"/>
+    </g>
+    <circle class="bg-decor-node c1 pulse"    cx="40"  cy="500" r="8"/>
+    <circle class="bg-decor-node c1 pulse d2" cx="260" cy="440" r="11"/>
+    <circle class="bg-decor-node c2 pulse d3" cx="480" cy="360" r="9"/>
+    <circle class="bg-decor-node c1 pulse d4" cx="420" cy="260" r="7"/>
+    <circle class="bg-decor-node c2 pulse"    cx="600" cy="220" r="8"/>
+    <circle class="bg-decor-node c3 pulse d2" cx="150" cy="400" r="6"/>
+    <circle class="bg-decor-node c1 pulse d3" cx="60"  cy="220" r="7"/>
+    <circle class="bg-decor-node c2 pulse d4" cx="220" cy="110" r="6"/>
+    <circle class="bg-decor-node c1 pulse"    cx="560" cy="110" r="7"/>
+    <circle class="bg-decor-node c3 pulse d2" cx="720" cy="150" r="6"/>
+    <circle class="bg-decor-node c2 pulse d3" cx="760" cy="420" r="8"/>
+    <circle class="bg-decor-node c1 pulse d4" cx="620" cy="480" r="6"/>
+  </svg>
+  <div class="wrap" style="max-width:520px">
+    <div class="login-card">
+      <div class="brand" style="justify-content:center;font-size:1.7rem"><span class="dot"></span>ReParole</div>
+      <h1 style="font-size:1.5rem">Administration</h1>
+      <p class="sub">Réservé aux personnes ayant un compte administrateur.</p>
+      <div class="field">
+        <label for="a-email">Email</label>
+        <input type="email" id="a-email" autocomplete="off" data-enter-submit="admin-login-btn">
+      </div>
+      <div class="field">
+        <label for="a-password">Mot de passe</label>
+        <input type="password" id="a-password" autocomplete="new-password" data-enter-submit="admin-login-btn">
+      </div>
+      <button id="admin-login-btn" class="btn-primary" onclick="AdminPanel.login()">Se connecter</button>
+      <p id="admin-login-error" style="color:#b23b3b;font-size:.85rem;margin-top:12px"></p>
+      <p class="hint" style="margin-top:12px"><a href="#" onclick="AdminPanel.forgotPassword();return false" style="color:var(--accent)">Mot de passe oublié ?</a></p>
+      <a href="index.html" class="btn-ghost" style="display:block;width:100%;margin-top:20px;text-align:center;text-decoration:none">← Revenir à l'accueil</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DÉFI DOUBLE AUTHENTIFICATION (v6.82) ============ -->
+<div id="admin-mfa-challenge" class="screen">
+  <svg class="bg-decor" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <g class="bg-decor-lines c1">
+      <path d="M40 500 Q150 400 260 440 T480 360"/>
+      <path d="M260 440 Q300 300 420 260"/>
+      <path d="M480 360 Q560 320 600 220"/>
+      <path d="M150 400 Q100 300 60 220"/>
+    </g>
+    <g class="bg-decor-lines c2">
+      <path d="M620 480 Q680 400 760 420"/>
+      <path d="M420 260 Q460 150 560 110"/>
+      <path d="M60 220 Q120 130 220 110"/>
+      <path d="M600 220 Q650 160 720 150"/>
+    </g>
+    <circle class="bg-decor-node c1 pulse"    cx="40"  cy="500" r="8"/>
+    <circle class="bg-decor-node c1 pulse d2" cx="260" cy="440" r="11"/>
+    <circle class="bg-decor-node c2 pulse d3" cx="480" cy="360" r="9"/>
+    <circle class="bg-decor-node c1 pulse d4" cx="420" cy="260" r="7"/>
+    <circle class="bg-decor-node c2 pulse"    cx="600" cy="220" r="8"/>
+    <circle class="bg-decor-node c3 pulse d2" cx="150" cy="400" r="6"/>
+    <circle class="bg-decor-node c1 pulse d3" cx="60"  cy="220" r="7"/>
+    <circle class="bg-decor-node c2 pulse d4" cx="220" cy="110" r="6"/>
+    <circle class="bg-decor-node c1 pulse"    cx="560" cy="110" r="7"/>
+    <circle class="bg-decor-node c3 pulse d2" cx="720" cy="150" r="6"/>
+    <circle class="bg-decor-node c2 pulse d3" cx="760" cy="420" r="8"/>
+    <circle class="bg-decor-node c1 pulse d4" cx="620" cy="480" r="6"/>
+  </svg>
+  <div class="wrap" style="max-width:520px">
+    <div class="login-card">
+      <div class="brand" style="justify-content:center;font-size:1.7rem"><span class="dot"></span>ReParole</div>
+      <h1 style="font-size:1.4rem">Code de sécurité</h1>
+      <p class="sub">Entrez le code à 6 chiffres affiché par votre application d'authentification.</p>
+      <div class="field"><label for="admin-mfa-code">Code à 6 chiffres</label><input id="admin-mfa-code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" maxlength="6" data-enter-submit="admin-mfa-validate-btn"></div>
+      <button id="admin-mfa-validate-btn" class="btn-primary" onclick="AdminPanel.submitMfaCode()">Valider</button>
+      <p class="hint" id="admin-mfa-error" role="status" aria-live="polite" style="color:var(--error)"></p>
+      <p class="hint" style="margin-top:16px"><a href="#" onclick="AdminPanel.cancelMfaChallenge();return false" style="color:var(--accent)">← Annuler et revenir à la connexion</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TABLEAU DE BORD ADMIN ============ -->
+<div id="admin-dashboard" class="screen">
+  <svg class="bg-decor bg-decor-light" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <g class="bg-decor-lines c1">
+      <path d="M40 500 Q150 400 260 440 T480 360"/>
+      <path d="M260 440 Q300 300 420 260"/>
+      <path d="M480 360 Q560 320 600 220"/>
+      <path d="M150 400 Q100 300 60 220"/>
+    </g>
+    <g class="bg-decor-lines c2">
+      <path d="M620 480 Q680 400 760 420"/>
+      <path d="M420 260 Q460 150 560 110"/>
+      <path d="M60 220 Q120 130 220 110"/>
+      <path d="M600 220 Q650 160 720 150"/>
+    </g>
+    <circle class="bg-decor-node c1 pulse"    cx="40"  cy="500" r="8"/>
+    <circle class="bg-decor-node c1 pulse d2" cx="260" cy="440" r="11"/>
+    <circle class="bg-decor-node c2 pulse d3" cx="480" cy="360" r="9"/>
+    <circle class="bg-decor-node c1 pulse d4" cx="420" cy="260" r="7"/>
+    <circle class="bg-decor-node c2 pulse"    cx="600" cy="220" r="8"/>
+    <circle class="bg-decor-node c3 pulse d2" cx="150" cy="400" r="6"/>
+    <circle class="bg-decor-node c1 pulse d3" cx="60"  cy="220" r="7"/>
+    <circle class="bg-decor-node c2 pulse d4" cx="220" cy="110" r="6"/>
+    <circle class="bg-decor-node c1 pulse"    cx="560" cy="110" r="7"/>
+    <circle class="bg-decor-node c3 pulse d2" cx="720" cy="150" r="6"/>
+    <circle class="bg-decor-node c2 pulse d3" cx="760" cy="420" r="8"/>
+    <circle class="bg-decor-node c1 pulse d4" cx="620" cy="480" r="6"/>
+  </svg>
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>ReParole — Administration</div>
+    <div class="who">
+      <button class="access-toggle" data-pref="darkMode" onclick="Prefs.toggle('darkMode')">🌙 Mode sombre</button>
+      <span id="admin-who"></span> <button class="btn-ghost" onclick="AdminPanel.logout()">Se déconnecter</button>
+    </div>
+  </div>
+  <nav class="admin-side" aria-label="Sections de l'administration">
+    <div class="admin-side-brand">
+      <svg viewBox="0 0 100 120" aria-hidden="true"><path d="M33 22 L26 4 L45 17 Z" fill="#6E4A2A"/><path d="M67 22 L74 4 L55 17 Z" fill="#6E4A2A"/><path d="M50 14 C27 14 19 35 19 59 C19 85 34 101 50 101 C66 101 81 85 81 59 C81 35 73 14 50 14Z" fill="#9A6B3F"/><ellipse cx="50" cy="70" rx="18" ry="21" fill="#F6EAD2"/><circle cx="37" cy="45" r="10" fill="#fff"/><circle cx="63" cy="45" r="10" fill="#fff"/><circle cx="37" cy="46" r="6" fill="#1d2521"/><circle cx="63" cy="46" r="6" fill="#1d2521"/><path d="M50 51 L45.5 56 Q50 63 54.5 56 Z" fill="#E8973A"/></svg>
+      <div><b>ReParole</b><span>Administration</span></div>
+    </div>
+    <a class="admin-side-link on" href="#acard-trends"><svg class="side-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 19V5M4 19h16" stroke-linecap="round"/><path d="M7 15l3.5-4 3 2.5L19 8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Tendances</span></a>
+    <a class="admin-side-link" href="#acard-days"><svg class="side-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3.5v3M16 3.5v3" stroke-linecap="round"/></svg><span>Connexions/jour</span></a>
+    <a class="admin-side-link" href="#acard-queue"><svg class="side-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10" stroke-linecap="round"/></svg><span>File d'attente</span></a>
+    <a class="admin-side-link" href="#acard-sugg"><svg class="side-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3a6 6 0 0 0-3.5 10.9V16h7v-2.1A6 6 0 0 0 12 3z"/><path d="M10 19h4" stroke-linecap="round"/></svg><span>Suggestions</span></a>
+    <a class="admin-side-link" href="#acard-hist"><svg class="side-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="9" cy="12" r="4"/><path d="M13 12h7M17.5 12v3" stroke-linecap="round"/></svg><span>Historique</span></a>
+    <a class="admin-side-link" href="#acard-errs"><svg class="side-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 4.5 21 19H3z" stroke-linejoin="round"/><path d="M12 10v4M12 16.5v.5" stroke-linecap="round"/></svg><span>Erreurs</span></a>
+    <a class="admin-side-link" href="#acard-pay"><svg class="side-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2.5"/><path d="M3 10.5h18" stroke-linecap="round"/></svg><span>Paiement &amp; tarifs</span></a>
+    <a class="admin-side-link" href="#acard-plan"><svg class="side-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m12 4 2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4-3.9-3.8 5.4-.8z" stroke-linejoin="round"/></svg><span>Activation Pro</span></a>
+    <a class="admin-side-link" href="#acard-sec"><svg class="side-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3.5 19 6v6c0 4.2-2.9 7.2-7 8.5-4.1-1.3-7-4.3-7-8.5V6z" stroke-linejoin="round"/></svg><span>Sécurité</span></a>
+    <div class="admin-side-foot">
+      <div class="admin-side-badge">🛡️ <b>2FA</b> · accès sécurisé</div>
+    </div>
+  </nav>
+  <div class="wrap">
+    <header class="admin-head">
+      <h1>Vue d'ensemble</h1>
+      <p id="admin-today"></p>
+    </header>
+
+    <!-- v6.224 : chiffres RÉELS (fonction SQL get_admin_overview, agrégats
+         seulement). Tant que le SQL n'est pas exécuté, les tuiles restent
+         à « — » : jamais de valeur inventée. -->
+    <div class="admin-tiles" id="admin-tiles">
+      <div class="atile"><b id="tile-patients">—</b><span>Patients actifs</span><small>séance sur 30 jours</small></div>
+      <div class="atile"><b id="tile-sessions">—</b><span>Séances (7 jours)</span></div>
+      <div class="atile"><b id="tile-logins">—</b><span>Connexions aujourd'hui</span></div>
+      <div class="atile"><b id="tile-sugg">—</b><span>Suggestions à traiter</span></div>
+    </div>
+
+    <!-- v6.178 : cartes sur 2-3 colonnes sur grand écran (même mécanisme
+         que les autres tableaux de bord) ; 1 colonne sur téléphone. -->
+    <div class="dashboard-grid">
+    <div class="card" id="acard-sec">
+      <h3>Sécurité du compte</h3>
+      <p style="color:var(--ink-soft);font-size:.88rem;margin-bottom:12px">
+        Double authentification (code à usage unique via une application comme Google Authenticator, Authy, 1Password...).
+        Fortement recommandé pour un compte qui donne accès à des données de patients.
+      </p>
+      <p class="hint">Statut : <b id="admin-mfa-status">Vérification…</b></p>
+      <div id="admin-mfa-enroll-step1">
+        <button class="btn-primary" onclick="AdminPanel.startMfaEnroll()">Activer la double authentification</button>
+      </div>
+      <div id="admin-mfa-enroll-step2" style="display:none;margin-top:14px">
+        <p style="font-size:.88rem;color:var(--ink-soft)">1. Scannez ce code avec votre application d'authentification :</p>
+        <div id="admin-mfa-qr" style="margin:12px 0;max-width:200px"></div>
+        <p style="font-size:.85rem;color:var(--ink-soft)">Ou entrez cette clé manuellement : <code id="admin-mfa-secret" style="font-size:.8rem;word-break:break-all"></code></p>
+        <p style="font-size:.88rem;color:var(--ink-soft);margin-top:12px">2. Entrez le code à 6 chiffres affiché par l'application pour confirmer :</p>
+        <div class="field" style="margin:10px 0"><input id="admin-mfa-confirm-code" type="text" inputmode="numeric" placeholder="123456" maxlength="6"></div>
+        <button class="btn-primary" onclick="AdminPanel.confirmMfaEnroll()">Confirmer l'activation</button>
+      </div>
+      <button class="btn-ghost" id="admin-mfa-disable-btn" style="display:none;margin-top:10px" onclick="AdminPanel.disableMfa()">Désactiver la double authentification</button>
+      <p id="admin-mfa-enroll-msg" class="hint" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="card" id="acard-pay">
+      <h3>💶 Paiement &amp; tarifs</h3>
+      <p style="color:var(--ink-soft);font-size:.88rem;margin-bottom:12px">
+        Tout se règle ici, sans toucher au code : solution d'encaissement (Stripe, banque française
+        via lien de paiement…), devise et tarifs. Les changements sont enregistrés en base et lus par l'application.
+      </p>
+      <div class="field"><label>Solution d'encaissement</label>
+        <select id="bill-provider">
+          <option value="stripe">Stripe</option>
+          <option value="cyberpaiement">Banque Populaire — Cyberpaiement</option>
+          <option value="payzen">PayZen (Lyra)</option>
+          <option value="systempay">Systempay</option>
+          <option value="stancer">Stancer</option>
+          <option value="paypal">PayPal</option>
+          <option value="autre">Autre…</option>
+        </select></div>
+      <div class="field" id="bill-provider-other-row" style="display:none"><label>Nom de la solution</label><input id="bill-provider-other" type="text" placeholder="ex : Ma banque"></div>
+      <div class="field"><label>Méthode d'intégration</label>
+        <select id="bill-method">
+          <option value="link">Lien de paiement (URL fournie par la banque)</option>
+          <option value="api">Clés API</option>
+        </select></div>
+      <div class="field" id="bill-link-row"><label>Lien de paiement</label><input id="bill-link" type="url" placeholder="https://paiement.ma-banque.fr/…"></div>
+      <div id="bill-api-rows" style="display:none">
+        <div class="field"><label>Identifiant marchand / boutique</label><input id="bill-shop" type="text" placeholder="ex : 12345678"></div>
+        <div class="field"><label>Clé / secret</label><input id="bill-key" type="password" placeholder="••••••••"></div>
+      </div>
+      <div class="field"><label>Mode</label>
+        <select id="bill-mode"><option value="test">Test</option><option value="live">Production</option></select></div>
+      <div class="field"><label>Devise d'affichage</label>
+        <select id="bill-currency"><option value="EUR">€ EUR</option><option value="USD">$ USD</option><option value="GBP">£ GBP</option><option value="CHF">CHF</option></select></div>
+      <div class="field"><label>Prix patient (mensuel)</label><input id="bill-patient-monthly" type="number" step="0.01" min="0" placeholder="9.99"></div>
+      <div class="field"><label>Ortho Pro — mensuel</label><input id="bill-ortho-monthly" type="number" step="0.01" min="0" placeholder="9.99"></div>
+      <div class="field"><label>Ortho Pro — annuel</label><input id="bill-ortho-annual" type="number" step="0.01" min="0" placeholder="79.00"></div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.9rem;margin:8px 0"><input id="bill-free-beta" type="checkbox" checked> Gratuit pendant la phase de test</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.9rem;margin:8px 0"><input id="bill-free-tier" type="checkbox" checked> Proposer un vrai palier gratuit</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:.9rem;margin:8px 0"><input id="bill-foreign-cards" type="checkbox" checked> Accepter les cartes étrangères (Visa/Mastercard)</label>
+      <button class="btn-primary" onclick="AdminPanel.saveBilling()">Enregistrer les réglages</button>
+      <p id="bill-msg" class="hint" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="card" id="acard-plan">
+      <h3>⭐ Activation Pro manuelle</h3>
+      <p style="color:var(--ink-soft);font-size:.88rem;margin-bottom:12px">
+        Après un paiement reçu par lien bancaire (confirmé sur votre relevé ou l'interface de la banque),
+        basculez ici le compte en « pro ». Le retour en « free » sert en cas d'arrêt d'abonnement.
+      </p>
+      <div class="field"><label>Type de compte</label>
+        <select id="plan-type"><option value="patient">Patient (clé p-…)</option><option value="ortho">Orthophoniste (e-mail ou identifiant)</option></select></div>
+      <div class="field"><label>Clé patient ou e-mail ortho</label><input id="plan-id" type="text" placeholder="p-xxxxxxxx ou prenom@cabinet.fr"></div>
+      <div class="field"><label>Plan</label>
+        <select id="plan-value"><option value="pro">pro (payé)</option><option value="free">free (gratuit)</option></select></div>
+      <button class="btn-primary" onclick="AdminPanel.setPlan()">Appliquer</button>
+      <p id="plan-msg" class="hint" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="card" id="acard-trends">
+      <h3>Tendances récentes (30 derniers jours, agrégées et anonymisées)</h3>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        Aucune donnée individuelle ici — uniquement des totaux sur
+        l'ensemble des patients, pour repérer où du contenu manque peut-être.
+      </p>
+      <div id="admin-trends"><p class="hint">Chargement…</p></div>
+    </div>
+
+    <div class="card" id="acard-days">
+      <h3>📅 Connexions par jour (30 derniers jours)</h3>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        Nombre de personnes différentes connectées chaque jour —
+        aucun nom, aucun code, aucune ligne individuelle : uniquement
+        un total par jour.
+      </p>
+      <div id="admin-daily-connections"><p class="hint">Chargement…</p></div>
+    </div>
+
+    <div class="card" id="acard-queue">
+      <h3>Contributions en attente de relecture</h3>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        Rien ici n'est visible des patients. Vérifiez les sources avant
+        de valider — une phrase complète reste risquée sans relecture
+        native, même bien sourcée.
+      </p>
+      <p id="admin-queue-status" role="status" aria-live="polite" style="color:#b23b3b;font-size:.85rem"></p>
+      <div id="admin-queue"><p class="hint">Chargement…</p></div>
+    </div>
+
+    <div class="card" id="acard-sugg">
+      <h3>💡 Suggestions reçues</h3>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        Boîte à idées ouverte aux patients, aidants et orthophonistes
+        (widget "Une idée, une remarque ?" sur leurs tableaux de bord
+        respectifs). Aucune réponse automatique n'est envoyée — à vous
+        de trier et, le cas échéant, de recontacter via l'email laissé.
+      </p>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="btn-ghost" style="width:auto;padding:6px 14px;font-size:.82rem" onclick="AdminPanel.setSuggestionFilter('new')">Nouvelles</button>
+        <button class="btn-ghost" style="width:auto;padding:6px 14px;font-size:.82rem" onclick="AdminPanel.setSuggestionFilter('all')">Toutes</button>
+        <button class="btn-ghost" style="width:auto;padding:6px 14px;font-size:.82rem" onclick="AdminPanel.setSuggestionFilter('archived')">Archivées</button>
+      </div>
+      <!-- v6.182 : l'IA classe et résume la boîte à idées — l'admin trie
+           et répond ; aucune réponse automatique n'est envoyée. Les emails
+           de contact ne sont pas transmis à l'IA. -->
+      <button class="btn-ghost" id="ai-triage-btn" onclick="AdminPanel.iaTriageSuggestions()">✨ Analyser les suggestions (IA)</button>
+      <div id="ai-triage-out" class="hint" style="white-space:pre-wrap;margin-top:8px"></div>
+      <div id="admin-suggestions"><p class="hint">Chargement…</p></div>
+    </div>
+
+    <div class="card" id="acard-hist">
+      <h3>🔑 Historique des connexions</h3>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        Connexions réussies des comptes admin et orthophoniste
+        uniquement (200 dernières). Les patients n'ont pas de notion
+        de "connexion" au même sens (code de suivi, pas de compte).
+      </p>
+      <!-- v6.186 : ménage — supprime les connexions de plus de 30 jours
+           (fonction SQL gatée par la table admins). -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <label for="purge-days" style="font-size:.85rem;color:var(--ink-soft)">Garder&nbsp;:</label>
+        <select id="purge-days" style="padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)">
+          <option value="7">7 jours</option>
+          <option value="14">14 jours</option>
+          <option value="30" selected>30 jours</option>
+        </select>
+        <button class="btn-ghost" id="purge-logins-btn" onclick="AdminPanel.purgeLoginEvents()">🧹 Faire le ménage</button>
+      </div>
+      <p id="purge-logins-status" role="status" aria-live="polite" class="hint" style="margin-top:6px"></p>
+      <div id="admin-login-history"><p class="hint">Chargement…</p></div>
+    </div>
+
+    <div class="card" id="acard-errs">
+      <h3>⚠️ Erreurs techniques récentes</h3>
+      <p class="hint" style="margin-top:0;margin-bottom:12px">
+        Vraies erreurs du site (bugs, plantages) captées automatiquement
+        chez les personnes qui les rencontrent — pas les erreurs des
+        patients dans leurs exercices (voir "Tendances récentes"
+        plus haut pour celles-ci). 200 dernières, message + page +
+        détail technique.
+      </p>
+      <!-- v6.182 : l'IA regroupe les erreurs par cause probable — le
+           développeur débogue et décide. -->
+      <button class="btn-ghost" id="ai-errors-btn" onclick="AdminPanel.iaErrorsDigest()">✨ Résumer les causes probables (IA)</button>
+      <!-- v6.183 : veille AVEC recherche web — l'IA cherche les
+           publications récentes (revues, essais) sur les exercices de
+           rééducation et produit un digest sourcé. L'humain décide quoi
+           construire. -->
+      <button class="btn-ghost" id="ai-research-btn" onclick="AdminPanel.iaResearchExercises()">🔎 Veille : nouveaux exercices (IA + web)</button>
+      <div id="ai-research-out" class="hint" style="white-space:pre-wrap;margin-top:8px"></div>
+      <button class="btn-ghost" style="margin-top:6px" onclick="AdminPanel.copyResearch()">📋 Copier la veille</button>
+      <span id="ai-research-copied" class="hint"></span>
+      <div id="ai-errors-out" class="hint" style="white-space:pre-wrap;margin-top:8px"></div>
+      <div id="admin-client-errors"><p class="hint">Chargement…</p></div>
+    </div>
+    </div><!-- /.dashboard-grid -->
+
+  </div>
+</div>
+
+<script src="js/storage.js"></script>
+<script src="js/error-tracking.js"></script>
+<script src="js/prefs.js"></script>
+<script src="js/admin.js"></script>
+<script>Prefs.load();</script>
+<script src="js/enter-submit.js"></script>
+<script>
+// v6.214→215 : barre latérale admin — surligne la section cliquée.
+(function(){
+  var links=document.querySelectorAll('.admin-side-link');
+  links.forEach(function(l){ l.addEventListener('click', function(){
+    links.forEach(function(x){ x.classList.toggle('on', x===l); });
+  }); });
+})();
+</script>
+<script>
+// v6.221 : date du jour dans l'en-tête de l'administration.
+(function(){
+  var el=document.getElementById('admin-today'); if(!el) return;
+  try{ el.textContent = new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); }catch(e){}
+})();
+</script>
+<script>
+// v6.223 : date du jour dans l'en-tête admin (interface admin en français).
+(function(){var e=document.getElementById('admin-today');if(!e)return;
+ try{e.textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}catch(x){}})();
+</script>
+</body>
+</html>
