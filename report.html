@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<!-- v6.79 : préconnexion à Supabase — accélère la toute première requête API (DNS + TLS déjà négociés avant le premier appel réel) -->
+<link rel="preconnect" href="https://bwxlshedzpfaeszwktdx.supabase.co" crossorigin>
+<link rel="dns-prefetch" href="https://bwxlshedzpfaeszwktdx.supabase.co">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0A6B4F">
+<title>ReParole — Rapport</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/ortho.css">
+</head>
+<body>
+<div class="report-page" id="report">
+  <p class="hint">Chargement du rapport…</p>
+</div>
+<div class="wrap no-print" style="text-align:center">
+  <button class="btn-primary report-print-btn" onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button>
+</div>
+
+<script src="js/storage.js"></script>
+<script src="js/error-tracking.js"></script>
+<script src="js/learner.js"></script>
+<script src="js/charts.js"></script>
+<script>
+const Store = window.ReParoleStore;
+const AI = window.Learner;
+const LEVEL_NAMES = {1:'Doux',2:'Intermédiaire',3:'Avancé'};
+// v6.93 : réponse à "un bilan complet et détaillé" — noms d'exercice
+// lisibles au lieu de la clé technique brute (ex. "denomination"),
+// et libellés des profils cliniques déclarés par l'orthophoniste.
+const EX_TYPE_NAMES = {
+  denomination:'Nommer les images', completion:'Compléter la phrase', comprehension:'Comprendre la consigne',
+  repetition:'Répéter à voix haute', denomination_orale:'Nommer à voix haute', fluence:'Fluence verbale',
+  intonation:'Répéter avec intonation', photos_perso:'Nommer vos photos', memory:'Jeu de mémoire',
+  phonation:'Tenir la phonation', conversation:'Conversation guidée',
+};
+const CLINICAL_NAMES = {
+  broca:'Broca (discours peu fluent)', wernicke:'Wernicke (compréhension touchée)', anomique:'Anomique (manque du mot)',
+  globale:'Aphasie globale', dysarthrie:'Dysarthrie / trouble moteur de la parole', traumatisme_cranien:'Traumatisme crânien',
+  orl:'Suites ORL (chirurgie, geste sur la voix)', parkinson:'Parkinson (voix / parole)',
+};
+
+function qs(name){ return new URLSearchParams(location.search).get(name); }
+// v6.83 : VRAI BUG DE SÉCURITÉ corrigé — le nom du patient (texte
+// libre) s'affichait sans échappement dans ce rapport, ouvert par
+// l'orthophoniste (OrthoApp.openReport()) — une faille XSS stockée de
+// plus, trouvée dans la même passe que celles déjà corrigées dans
+// js/admin.js et js/dashboard-ortho.js.
+function escapeHTML(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+async function buildReport(){
+  const code = qs('code');
+  const orthoCode = qs('ortho');
+  const el = document.getElementById('report');
+  if(!code){ el.innerHTML = '<p>Code patient manquant dans l\'adresse (ex: report.html?code=demo).</p>'; return; }
+
+  const patient = await Store.loadPatient(code);
+  if(!patient){ el.innerHTML = '<p>Dossier introuvable pour ce code.</p>'; return; }
+
+  const profile = await Store.loadProfile(code);
+  AI.load(profile);
+  const dominant = AI.dominantDifficulty();
+  const top = AI.topErrors().filter(e=>e.count>0);
+  const catLabels = window.ERROR_LABELS || {};
+
+  const hist = await Store.history(code);
+  const notes = await Store.listNotes(code);
+  const period = hist.length ? {
+    start: new Date(hist[0].at),
+    end: new Date(hist[hist.length-1].at)
+  } : null;
+  const trend = AI.trend(hist);
+
+  const successPct = patient.total ? Math.round(100*patient.correct/patient.total) : null;
+
+  el.innerHTML = `
+    <div class="report-header">
+      <h1>Rapport de suivi — ReParole</h1>
+      <div class="r-sub">Patient : <b>${escapeHTML(patient.name)}</b> (code ${code}) — Généré le ${new Date().toLocaleDateString('fr-FR')}</div>
+      ${period ? `<div class="r-sub">Période couverte : du ${period.start.toLocaleDateString('fr-FR')} au ${period.end.toLocaleDateString('fr-FR')}</div>` : ''}
+      ${patient.clinical_profile && CLINICAL_NAMES[patient.clinical_profile] ? `<div class="r-sub">Profil clinique déclaré : <b>${escapeHTML(CLINICAL_NAMES[patient.clinical_profile])}</b></div>` : ''}
+    </div>
+
+    <div class="report-section">
+      <h2>Résumé de l'activité</h2>
+      <div class="report-grid">
+        <div><div class="num">${patient.sessions}</div><div class="lab">séances</div></div>
+        <div><div class="num">${successPct!==null ? successPct+'%':'—'}</div><div class="lab">taux de réussite global</div></div>
+        <div><div class="num">${LEVEL_NAMES[patient.level]||patient.level}</div><div class="lab">niveau actuel</div></div>
+      </div>
+      ${window.Charts ? `<div style="margin-top:16px">${Charts.successLine(hist)}</div>` : ''}
+      <p style="color:var(--ink-soft);font-size:.85rem;margin-top:8px">${
+        trend.direction==='hausse' ? `📈 Tendance à la hausse sur les dernières séances (+${trend.deltaPct} points).`
+        : trend.direction==='baisse' ? `📉 Tendance à la baisse sur les dernières séances (${trend.deltaPct} points).`
+        : trend.direction==='stable' ? `➡️ Tendance stable sur les dernières séances.`
+        : `Pas encore assez de séances pour dégager une tendance.`
+      }</p>
+    </div>
+
+    <div class="report-section">
+      <h2>Analyse des erreurs</h2>
+      <p class="disclaimer">⚠️ Catégorisation automatique fournie à titre de piste de lecture. Elle ne constitue pas un diagnostic et ne remplace pas le bilan orthophonique.</p>
+      ${dominant ? `<p><b>Difficulté dominante observée :</b> ${dominant.label} (${dominant.count} occurrence(s)).</p>` : '<p>Pas encore assez de données pour dégager une tendance.</p>'}
+      ${top.length ? `<ul>${top.map(e=>`<li>${catLabels[e.category]||e.category} : ${e.count}</li>`).join('')}</ul>` : ''}
+    </div>
+
+    <div class="report-section">
+      <h2>Historique complet des séances</h2>
+      ${hist.length ? `
+        <p style="color:var(--ink-soft);font-size:.8rem;margin-bottom:8px">${hist.length} séance(s) au total.</p>
+        <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+          <thead><tr style="text-align:start;border-bottom:2px solid var(--line)"><th>Date</th><th>Exercice</th><th>Score</th><th>Niveau</th></tr></thead>
+          <tbody>
+            ${hist.slice().reverse().map(s=>`<tr style="border-bottom:1px solid var(--line)">
+              <td>${new Date(s.at).toLocaleDateString('fr-FR')}</td><td>${escapeHTML(EX_TYPE_NAMES[s.type]||s.type)}</td><td>${s.score}/${s.total}</td><td>${LEVEL_NAMES[s.level]||s.level}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>` : '<p>Aucune séance enregistrée.</p>'}
+    </div>
+
+    ${notes.length ? `
+    <div class="report-section">
+      <h2>Notes cliniques</h2>
+      <p class="disclaimer">⚠️ Notes libres rédigées par l'orthophoniste, reprises ici telles quelles pour archivage — pas de contenu généré automatiquement.</p>
+      <ul>${notes.map(n=>`<li style="margin-bottom:6px"><span style="color:var(--ink-soft);font-size:.8rem">${new Date(n.created_at).toLocaleDateString('fr-FR')} —</span> ${escapeHTML(n.content)}</li>`).join('')}</ul>
+    </div>` : ''}
+
+    <p class="report-note">
+      Ce rapport est généré automatiquement par ReParole à partir de l'usage de l'application par le patient.
+      Il s'agit d'un outil d'appui, pas d'un compte-rendu clinique : l'interprétation et la décision
+      thérapeutique restent la responsabilité exclusive de l'orthophoniste. Conformément au RGPD, ce document
+      contient des données de santé — à conserver et transmettre selon vos procédures habituelles de
+      confidentialité.
+    </p>
+  `;
+
+  // Journalise la génération du rapport (métadonnées seulement)
+  await Store.saveReportMeta(code, orthoCode, {
+    sessions: patient.sessions, successPct, dominant: dominant?dominant.category:null, topErrors: top
+  }, period?period.start.toISOString():null, period?period.end.toISOString():null);
+}
+buildReport();
+</script>
+</body>
+</html>

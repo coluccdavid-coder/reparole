@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<!-- v6.79 : préconnexion à Supabase — accélère la toute première requête API (DNS + TLS déjà négociés avant le premier appel réel) -->
+<link rel="preconnect" href="https://bwxlshedzpfaeszwktdx.supabase.co" crossorigin>
+<link rel="dns-prefetch" href="https://bwxlshedzpfaeszwktdx.supabase.co">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReParole — Proposer une contribution</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0A6B4F">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrap" style="max-width:640px">
+  <div class="login-card" style="margin-top:40px;text-align:left">
+    <div class="brand" style="justify-content:center;font-size:1.7rem"><span class="dot"></span>ReParole</div>
+    <a href="index.html" class="btn-ghost" style="display:block;width:100%;margin:14px 0;text-align:center;text-decoration:none">← Revenir à mon espace</a>
+    <h1 style="font-size:1.5rem;text-align:center">Proposer une contribution</h1>
+    <p class="sub" style="text-align:center">
+      Vous parlez kabyle et voyez un mot ou une phrase à corriger ou à
+      ajouter ? Proposez-le ici. Rien n'apparaît dans l'application avant
+      qu'une personne de l'équipe ne l'ait relu et validé.
+    </p>
+
+    <form id="contribute-form" onsubmit="return false">
+      <div class="field">
+        <label for="c-kind">Type de contribution</label>
+        <select id="c-kind" onchange="Contribute.onKindChange()">
+          <option value="vocabulary">Un mot isolé (ex : un nom d'animal, d'objet)</option>
+          <option value="sentence-completion">Une phrase avec un mot manquant</option>
+          <option value="sentence-comprehension">Une question à choix multiple</option>
+          <option value="exercise">Une autre idée d'exercice</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="c-level">Niveau suggéré</label>
+        <select id="c-level">
+          <option value="1">1 — Doux</option>
+          <option value="2" selected>2 — Intermédiaire</option>
+          <option value="3">3 — Avancé</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="c-content">Contenu proposé, en kabyle</label>
+        <textarea id="c-content" placeholder="Ex (mot isolé) : AMCIC — ou (phrase à trous) : Aql-i tetteɣ ___."></textarea>
+        <p class="hint-small">Pour une phrase à trous, indiquez ___ à l'endroit du mot manquant.</p>
+      </div>
+
+      <div class="field">
+        <label for="c-answer">Réponse attendue (en kabyle)</label>
+        <input type="text" id="c-answer" placeholder="Ex : AMCIC, ou TATTEFFAḤT">
+      </div>
+
+      <div class="field" id="c-emoji-field">
+        <label for="c-emoji">Émoji correspondant (pour un mot isolé)</label>
+        <input type="text" id="c-emoji" placeholder="🐱">
+      </div>
+
+      <div class="field">
+        <label for="c-distractors">Autres choix proposés (mauvaises réponses), séparés par une virgule</label>
+        <input type="text" id="c-distractors" placeholder="Ex : AQJUN, AQNIN">
+      </div>
+
+      <div class="field">
+        <label for="c-translation">Traduction / sens en français</label>
+        <input type="text" id="c-translation" placeholder="Ex : chat, ou « Je suis en train de manger une pomme »">
+      </div>
+
+      <div class="field">
+        <label for="c-sources">Sources <span style="font-weight:400;color:var(--ink-soft)">(obligatoire — dictionnaire, corpus, personne kabylophone consultée…)</span></label>
+        <textarea id="c-sources" placeholder="Ex : Glosbe (fr.glosbe.com), confirmé aussi sur kabyle.com"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="c-name">Votre nom <span style="font-weight:400;color:var(--ink-soft)">(facultatif)</span></label>
+        <input type="text" id="c-name">
+      </div>
+
+      <div class="field">
+        <label for="c-contact">Contact <span style="font-weight:400;color:var(--ink-soft)">(facultatif — au cas où on aurait une question)</span></label>
+        <input type="text" id="c-contact" placeholder="email ou autre">
+      </div>
+
+      <div class="field">
+        <label for="c-note">Note pour la personne qui va relire <span style="font-weight:400;color:var(--ink-soft)">(facultatif)</span></label>
+        <textarea id="c-note"></textarea>
+      </div>
+
+      <button class="btn-primary" onclick="Contribute.submit()">Envoyer ma proposition</button>
+      <p id="contribute-status" role="status" aria-live="polite" style="margin-top:12px;font-size:.9rem"></p>
+    </form>
+
+    <a href="index.html" class="btn-ghost" style="display:block;width:100%;margin-top:20px;text-align:center;text-decoration:none">← Revenir à mon espace</a>
+    <a href="audio-checklist.html" class="btn-ghost" style="display:block;width:100%;margin-top:10px;text-align:center;text-decoration:none">🎙️ Voir les enregistrements audio encore manquants (kabyle/sango)</a>
+  </div>
+</div>
+
+<script src="js/storage.js"></script>
+<script src="js/error-tracking.js"></script>
+<script src="js/contribute.js"></script>
+<script src="js/footer.js"></script>
+<script src="js/enter-submit.js"></script>
+</body>
+</html>
